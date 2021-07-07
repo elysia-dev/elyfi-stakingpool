@@ -9,11 +9,11 @@ contract StakingPool {
   using StakingPoolLogic for PoolData;
   using SafeERC20 for IERC20;
 
-  constructor(
-    address stakingAsset,
-    address rewardAsset,
-    uint256 amountPerSecond
-  ) {}
+  constructor(address stakingAsset_, address rewardAsset_) {
+    stakingAsset = IERC20(stakingAsset_);
+    rewardAsset = IERC20(rewardAsset_);
+    _admin = msg.sender;
+  }
 
   struct PoolData {
     uint256 rewardPerSecond;
@@ -27,21 +27,23 @@ contract StakingPool {
     mapping(address => uint256) userPrincipal;
   }
 
-  uint8 internal _currentRound;
+  uint8 public currentRound;
 
-  IERC20 internal _stakingAsset;
-  IERC20 internal _rewardAsset;
+  address internal _admin;
+
+  IERC20 public stakingAsset;
+  IERC20 public rewardAsset;
 
   mapping(uint8 => PoolData) internal _rounds;
 
-  function stake(uint256 amount, bool migrate) external {
-    PoolData storage poolData = _rounds[_currentRound];
+  function stake(uint256 amount) external {
+    PoolData storage poolData = _rounds[currentRound];
 
     if (poolData.endTimestamp < block.timestamp) revert();
 
     poolData.updateStakingPool(msg.sender);
 
-    _stakingAsset.safeTransferFrom(msg.sender, address(this), amount);
+    stakingAsset.safeTransferFrom(msg.sender, address(this), amount);
 
     poolData.userPrincipal[msg.sender] += amount;
     poolData.totalPrincipal += amount;
@@ -54,16 +56,16 @@ contract StakingPool {
 
     if (reward == 0) revert();
 
-    _rewardAsset.safeTransfer(msg.sender, reward);
+    rewardAsset.safeTransfer(msg.sender, reward);
 
     poolData.userReward[msg.sender] = 0;
   }
 
   function withdraw(uint256 amount) external {
-    PoolData storage poolData = _rounds[_currentRound];
+    PoolData storage poolData = _rounds[currentRound];
     poolData.updateStakingPool(msg.sender);
 
-    _stakingAsset.safeTransfer(msg.sender, amount);
+    stakingAsset.safeTransfer(msg.sender, amount);
 
     poolData.userPrincipal[msg.sender] -= amount;
     poolData.totalPrincipal -= amount;
@@ -76,7 +78,7 @@ contract StakingPool {
   function _migrate() internal {
     uint256 totalUserReward;
     uint256 totalUserRound;
-    for (uint8 i = 0; i < _currentRound; i++) {
+    for (uint8 i = 0; i < currentRound; i++) {
       PoolData storage poolData = _rounds[i];
       totalUserReward += poolData.userReward[msg.sender];
       totalUserRound += poolData.userPrincipal[msg.sender];
@@ -86,16 +88,39 @@ contract StakingPool {
     }
   }
 
-  function getUserReward(uint8 Round) external view {
-    PoolData storage poolData = _rounds[Round];
+  function getUserReward(uint8 round) external view {
+    PoolData storage poolData = _rounds[round];
 
     poolData.getUserReward(msg.sender);
   }
 
-  function getRewardIndex(uint8 Round) external view returns (uint256) {
-    PoolData storage poolData = _rounds[Round];
+  function getRewardIndex(uint8 round) external view returns (uint256) {
+    PoolData storage poolData = _rounds[round];
 
     return poolData.getRewardIndex();
+  }
+
+  struct PoolDataLocalVars {
+    uint256 rewardPerSecond;
+    uint256 rewardIndex;
+    uint256 startTimestamp;
+    uint256 endTimestamp;
+    uint256 totalPrincipal;
+    uint256 lastUpdateTimestamp;
+  }
+
+  function getPoolData(uint8 round) external view returns (PoolDataLocalVars memory) {
+    PoolData storage poolData = _rounds[round];
+    PoolDataLocalVars memory vars;
+
+    vars.rewardPerSecond = poolData.rewardPerSecond;
+    vars.rewardIndex = poolData.rewardIndex;
+    vars.startTimestamp = poolData.startTimestamp;
+    vars.endTimestamp = poolData.endTimestamp;
+    vars.totalPrincipal = poolData.totalPrincipal;
+    vars.lastUpdateTimestamp = poolData.lastUpdateTimestamp;
+
+    return vars;
   }
 
   function initNewRound(
@@ -104,15 +129,21 @@ contract StakingPool {
     uint8 month,
     uint8 day,
     uint8 duration
-  ) external {
-    PoolData storage poolDataBefore = _rounds[_currentRound];
+  ) external onlyAdmin {
+    PoolData storage poolDataBefore = _rounds[currentRound];
 
     uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day);
 
     if (roundstartTimestamp < poolDataBefore.endTimestamp) revert();
 
-    uint8 newRound = _currentRound + 1;
-
+    uint8 newRound = currentRound + 1;
     _rounds[newRound].initRound(rewardPerSecond, roundstartTimestamp, duration);
+
+    currentRound = newRound;
+  }
+
+  modifier onlyAdmin {
+    if (msg.sender != _admin) revert();
+    _;
   }
 }

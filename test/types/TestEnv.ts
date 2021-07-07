@@ -1,6 +1,4 @@
-import { BigNumber } from 'ethers';
 import { RewardAsset, StakingAsset, StakingPool } from '../../typechain';
-
 interface TestEnv {
   stakingAsset: StakingAsset;
   rewardAsset: RewardAsset;

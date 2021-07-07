@@ -60,6 +60,7 @@ library StakingPoolLogic {
     poolData.rewardPerSecond = rewardPerSecond;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
+    poolData.lastUpdateTimestamp = block.timestamp;
   }
 
   function resetUserData(StakingPool.PoolData storage poolData, address user) internal {

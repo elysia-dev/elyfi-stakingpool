@@ -1,4 +1,4 @@
-import { BigNumber } from 'ethers';
+import { BigNumber, utils } from 'ethers';
 import { ethers } from 'hardhat';
 import {
   StakingAsset,
@@ -8,8 +8,9 @@ import {
   StakingAsset__factory,
   RewardAsset__factory,
 } from '../../typechain';
+import TestEnv from '../types/TestEnv';
 
-export const setRewardAsset = async (): Promise<RewardAsset> => {
+const setRewardAsset = async (): Promise<RewardAsset> => {
   let rewardAsset: RewardAsset;
 
   const rewardAssetFactory = (await ethers.getContractFactory(
@@ -21,7 +22,7 @@ export const setRewardAsset = async (): Promise<RewardAsset> => {
   return rewardAsset;
 };
 
-export const setStakingAsset = async (): Promise<StakingAsset> => {
+const setStakingAsset = async (): Promise<StakingAsset> => {
   let stakingAsset: StakingAsset;
 
   const stakingAssetFactory = (await ethers.getContractFactory(
@@ -33,7 +34,7 @@ export const setStakingAsset = async (): Promise<StakingAsset> => {
   return stakingAsset;
 };
 
-export const setStakingPool = async (
+const setStakingPool = async (
   stakingAsset: StakingAsset,
   rewardAsset: RewardAsset,
   amountPerSecond: BigNumber
@@ -44,13 +45,24 @@ export const setStakingPool = async (
     'StakingPool'
   )) as StakingPool__factory;
 
-  stakingPool = await stakingPoolFactory.deploy(
-    stakingAsset.address,
-    rewardAsset.address,
-    amountPerSecond
-  );
+  stakingPool = await stakingPoolFactory.deploy(stakingAsset.address, rewardAsset.address);
 
   return stakingPool;
 };
 
-export const testenv = ()
+export const setTestEnv = async (): Promise<TestEnv> => {
+  const testEnv: TestEnv = {
+    ...(<TestEnv>{}),
+  };
+
+  testEnv.rewardAsset = await setRewardAsset();
+  testEnv.stakingAsset = await setStakingAsset();
+
+  testEnv.stakingPool = await setStakingPool(
+    testEnv.stakingAsset,
+    testEnv.rewardAsset,
+    BigNumber.from(utils.parseEther('1'))
+  );
+
+  return testEnv;
+};
