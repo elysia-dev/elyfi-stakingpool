@@ -3,9 +3,9 @@ import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
 import { SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
+import { expect } from 'chai';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-
-const { expect } = require('chai');
+require('./utils/matchers.ts');
 
 describe('StakingPool.initRound', () => {
   let testEnv: TestEnv;
@@ -38,7 +38,7 @@ describe('StakingPool.initRound', () => {
         testEnv.stakingPool
           .connect(depositor)
           .initNewRound(rewardPersecond, year, month, day, duration)
-      ).to.be.reverted;
+      ).to.be.revertedWith('OnlyAdmin');
     });
 
     it('success', async () => {
@@ -64,38 +64,47 @@ describe('StakingPool.initRound', () => {
         testEnv.stakingPool
           .connect(deployer)
           .initNewRound(rewardPersecond, year, month, day, duration)
-      ).to.be.reverted;
+      ).to.be.revertedWith('RoundConflicted');
     });
   });
 
-  context('when current round is over', async () => {
+  context('when the current round is over', async () => {
     let initTx: ContractTransaction;
     const nextYear = year.add(1);
-    const nextStartTimestamp = toTimestamp(year, month, day);
+    const nextStartTimestamp = toTimestamp(nextYear, month, day);
     const nextEndTimestamp = nextStartTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
 
-    beforeEach('init first round and time passes', async () => {
+    beforeEach('init the first round and time passes', async () => {
       initTx = await testEnv.stakingPool
         .connect(deployer)
         .initNewRound(rewardPersecond, year, month, day, duration);
       await advanceTimeTo(await getTimestamp(initTx), endTimestamp);
     });
-    it('success', async () => {
-      await testEnv.stakingPool
+
+    it('init the next round, success', async () => {
+      const secondInitTx = await testEnv.stakingPool
         .connect(deployer)
         .initNewRound(rewardPersecond, nextYear, month, day, duration);
 
-      const poolData = await testEnv.stakingPool.getPoolData(1);
+      const poolData = await testEnv.stakingPool.getPoolData(2);
 
       expect(poolData.rewardPerSecond).to.be.equal(rewardPersecond);
       expect(poolData.rewardIndex).to.be.equal(0);
       expect(poolData.startTimestamp).to.be.equal(nextStartTimestamp);
       expect(poolData.endTimestamp).to.be.equal(nextEndTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
-      expect(poolData.lastUpdateTimestamp).to.be.equal(await getTimestamp(initTx));
-      expect(await testEnv.stakingPool.currentRound()).to.be.equal(1);
+      expect(poolData.lastUpdateTimestamp).to.be.equal(await getTimestamp(secondInitTx));
+      expect(await testEnv.stakingPool.currentRound()).to.be.equal(2);
     });
 
-    it('reverts when user has migrated', async () => {});
+    it('not initiated pool data should be 0', async () => {
+      const poolData = await testEnv.stakingPool.getPoolData(3);
+      expect(poolData.rewardPerSecond).to.be.equal(0);
+      expect(poolData.rewardIndex).to.be.equal(0);
+      expect(poolData.startTimestamp).to.be.equal(0);
+      expect(poolData.endTimestamp).to.be.equal(0);
+      expect(poolData.totalPrincipal).to.be.equal(0);
+      expect(poolData.lastUpdateTimestamp).to.be.equal(0);
+    });
   });
 });

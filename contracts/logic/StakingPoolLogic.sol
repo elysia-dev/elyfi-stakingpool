@@ -12,7 +12,7 @@ library StakingPoolLogic {
     uint256 currentTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
       : poolData.endTimestamp;
-    uint256 timeDiff = block.timestamp - currentTimestamp;
+    uint256 timeDiff = currentTimestamp - poolData.lastUpdateTimestamp;
     uint256 totalPrincipal = poolData.totalPrincipal;
 
     if (timeDiff == 0) {
@@ -57,7 +57,7 @@ library StakingPoolLogic {
     uint256 roundStartTimestamp,
     uint8 duration
   ) internal {
-    poolData.rewardPerSecond = rewardPerSecond;
+    poolData.rewardPerSecond = rewardPerSecond * 1e9;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
     poolData.lastUpdateTimestamp = block.timestamp;

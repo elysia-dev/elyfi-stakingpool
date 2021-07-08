@@ -36,10 +36,22 @@ contract StakingPool {
 
   mapping(uint8 => PoolData) internal _rounds;
 
+  error NotInRound();
+  error StakingNotInitiated();
+  error InvaidAmount();
+  error ZeroReward();
+  error OnlyAdmin();
+  error RoundConflicted();
+
   function stake(uint256 amount) external {
     PoolData storage poolData = _rounds[currentRound];
 
-    if (poolData.endTimestamp < block.timestamp) revert();
+    if (currentRound == 0) revert StakingNotInitiated();
+
+    if (poolData.endTimestamp < block.timestamp && poolData.startTimestamp > block.timestamp)
+      revert NotInRound();
+
+    if (amount == 0) revert InvaidAmount();
 
     poolData.updateStakingPool(msg.sender);
 
@@ -54,7 +66,7 @@ contract StakingPool {
 
     uint256 reward = poolData.getUserReward(msg.sender);
 
-    if (reward == 0) revert();
+    if (reward == 0) revert ZeroReward();
 
     rewardAsset.safeTransfer(msg.sender, reward);
 
@@ -88,12 +100,6 @@ contract StakingPool {
     }
   }
 
-  function getUserReward(uint8 round) external view {
-    PoolData storage poolData = _rounds[round];
-
-    poolData.getUserReward(msg.sender);
-  }
-
   function getRewardIndex(uint8 round) external view returns (uint256) {
     PoolData storage poolData = _rounds[round];
 
@@ -123,6 +129,23 @@ contract StakingPool {
     return vars;
   }
 
+  struct UserDataLocalVars {
+    uint256 userIndex;
+    uint256 userReward;
+    uint256 userPrincipal;
+  }
+
+  function getUserData(uint8 round, address user) external view returns (UserDataLocalVars memory) {
+    PoolData storage poolData = _rounds[round];
+    UserDataLocalVars memory vars;
+
+    vars.userIndex = poolData.userIndex[user];
+    vars.userPrincipal = poolData.userPrincipal[user];
+    vars.userReward = poolData.getUserReward(user);
+
+    return vars;
+  }
+
   function initNewRound(
     uint256 rewardPerSecond,
     uint16 year,
@@ -134,7 +157,7 @@ contract StakingPool {
 
     uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day);
 
-    if (roundstartTimestamp < poolDataBefore.endTimestamp) revert();
+    if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
 
     uint8 newRound = currentRound + 1;
     _rounds[newRound].initRound(rewardPerSecond, roundstartTimestamp, duration);
@@ -143,7 +166,7 @@ contract StakingPool {
   }
 
   modifier onlyAdmin {
-    if (msg.sender != _admin) revert();
+    if (msg.sender != _admin) revert OnlyAdmin();
     _;
   }
 }

@@ -4,10 +4,9 @@ import UserData from '../types/UserData';
 
 export function calculateRewardIndex(poolData: PoolData, txTimeStamp: BigNumber): BigNumber {
   let timeDiff: BigNumber;
-  if (txTimeStamp.lt(poolData.endTimestamp)) {
-    timeDiff = txTimeStamp.sub(poolData.lastUpdateTimestamp);
-  }
-  timeDiff = txTimeStamp.sub(poolData.endTimestamp);
+  timeDiff = txTimeStamp.lt(poolData.endTimestamp)
+    ? (timeDiff = txTimeStamp.sub(poolData.lastUpdateTimestamp))
+    : (timeDiff = txTimeStamp.sub(poolData.endTimestamp));
 
   if (timeDiff.eq(0)) {
     return BigNumber.from(0);
@@ -17,7 +16,7 @@ export function calculateRewardIndex(poolData: PoolData, txTimeStamp: BigNumber)
     return BigNumber.from(0);
   }
 
-  const rewardIndexDiff = timeDiff.mul(poolData.rewardPerSecond).sub(poolData.totalPrincipal);
+  const rewardIndexDiff = timeDiff.mul(poolData.rewardPerSecond).div(poolData.totalPrincipal);
 
   return poolData.rewardIndex.add(rewardIndexDiff);
 }
