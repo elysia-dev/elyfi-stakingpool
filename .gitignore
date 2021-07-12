@@ -45,9 +45,6 @@ jspm_packages/
 artifacts/
 cache/
 
-# Deployement files
-deployments/
-
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
 
@@ -145,6 +142,3 @@ workspace.code-workspace
 # xml, xlsx file
 *.xlsx
 *.xml
-
-# abi
-data/abi/*
