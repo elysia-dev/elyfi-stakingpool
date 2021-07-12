@@ -17,7 +17,12 @@ Assertion.addMethod('equalPoolData', function (expectedData: PoolData) {
   const actualData = <PoolData>this._obj;
 
   (Object.keys(actualData) as (keyof PoolData)[]).forEach((key) => {
-    console.log('pool', key, expectedData[key].toString());
+    // console.log(
+    //   'pool, contract, ts',
+    //   key,
+    //   expectedData[key].toString(),
+    //   actualData[key].toString()
+    // );
     expect(expectedData[key]).to.eq(actualData[key]);
   });
 });
@@ -26,7 +31,12 @@ Assertion.addMethod('equalUserData', function (expectedData: UserData) {
   const actualData = <UserData>this._obj;
 
   (Object.keys(actualData) as (keyof UserData)[]).forEach((key) => {
-    console.log('user', key, expectedData[key].toString());
+    // console.log(
+    //   'user, contract, ts',
+    //   key,
+    //   expectedData[key].toString(),
+    //   actualData[key].toString()
+    // );
     expect(expectedData[key]).to.eq(actualData[key]);
   });
 });

@@ -5,6 +5,7 @@ import './logic/StakingPoolLogic.sol';
 import './interface/IStakingPool.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import 'hardhat/console.sol';
 
 contract StakingPool is IStakingPool {
   using StakingPoolLogic for PoolData;
@@ -166,7 +167,7 @@ contract StakingPool is IStakingPool {
   {
     PoolData storage poolData = _rounds[round];
 
-    return (poolData.userIndex[user], poolData.userPrincipal[user], poolData.getUserReward(user));
+    return (poolData.userIndex[user], poolData.getUserReward(user), poolData.userPrincipal[user]);
   }
 
   function initNewRound(

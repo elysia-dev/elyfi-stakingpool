@@ -81,7 +81,7 @@ describe('StakingPool.stake', () => {
       await testEnv.stakingAsset.connect(bob).faucet();
       await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
     });
-    it('first stake and second stake', async () => {
+    it('first stake and second stake from alice', async () => {
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
 
       const poolDataBefore = await getPoolData(testEnv);
@@ -97,6 +97,29 @@ describe('StakingPool.stake', () => {
 
       const poolDataAfter = await getPoolData(testEnv);
       const userDataAfter = await getUserData(testEnv, alice);
+
+      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
+      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+    });
+
+    it('first stake, second stake from alice, third stake from bob', async () => {
+      await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+      await testEnv.stakingPool.connect(alice).stake(stakeAmount);
+
+      const poolDataBefore = await getPoolData(testEnv);
+      const userDataBefore = await getUserData(testEnv, bob);
+      const stakeTx = await testEnv.stakingPool.connect(bob).stake(stakeAmount);
+
+      const [expectedPoolData, expectedUserData] = expectDataAfterStake(
+        poolDataBefore,
+        userDataBefore,
+        await getTimestamp(stakeTx),
+        stakeAmount
+      );
+
+      const poolDataAfter = await getPoolData(testEnv);
+      const userDataAfter = await getUserData(testEnv, bob);
+
       expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
       expect(userDataAfter).to.be.equalUserData(expectedUserData);
     });

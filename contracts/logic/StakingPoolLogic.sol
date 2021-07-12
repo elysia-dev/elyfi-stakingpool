@@ -30,7 +30,7 @@ library StakingPoolLogic {
       return 0;
     }
 
-    uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond) / totalPrincipal;
+    uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond * 1e9) / totalPrincipal;
 
     return poolData.rewardIndex + rewardIndexDiff;
   }
@@ -69,7 +69,7 @@ library StakingPoolLogic {
     uint256 roundStartTimestamp,
     uint8 duration
   ) internal returns (uint256, uint256) {
-    poolData.rewardPerSecond = rewardPerSecond * 1e9;
+    poolData.rewardPerSecond = rewardPerSecond;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
     poolData.lastUpdateTimestamp = block.timestamp;

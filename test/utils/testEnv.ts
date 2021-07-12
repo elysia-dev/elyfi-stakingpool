@@ -36,8 +36,7 @@ const setStakingAsset = async (): Promise<StakingAsset> => {
 
 const setStakingPool = async (
   stakingAsset: StakingAsset,
-  rewardAsset: RewardAsset,
-  amountPerSecond: BigNumber
+  rewardAsset: RewardAsset
 ): Promise<StakingPool> => {
   let stakingPool: StakingPool;
 
@@ -58,11 +57,7 @@ export const setTestEnv = async (): Promise<TestEnv> => {
   testEnv.rewardAsset = await setRewardAsset();
   testEnv.stakingAsset = await setStakingAsset();
 
-  testEnv.stakingPool = await setStakingPool(
-    testEnv.stakingAsset,
-    testEnv.rewardAsset,
-    BigNumber.from(utils.parseEther('1'))
-  );
+  testEnv.stakingPool = await setStakingPool(testEnv.stakingAsset, testEnv.rewardAsset);
 
   return testEnv;
 };

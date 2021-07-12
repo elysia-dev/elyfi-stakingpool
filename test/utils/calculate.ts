@@ -16,7 +16,10 @@ export function calculateRewardIndex(poolData: PoolData, txTimeStamp: BigNumber)
     return BigNumber.from(0);
   }
 
-  const rewardIndexDiff = timeDiff.mul(poolData.rewardPerSecond).div(poolData.totalPrincipal);
+  const rewardIndexDiff = timeDiff
+    .mul(poolData.rewardPerSecond)
+    .mul(1e9)
+    .div(poolData.totalPrincipal);
 
   return poolData.rewardIndex.add(rewardIndexDiff);
 }
