@@ -6,11 +6,13 @@ import fs from 'fs';
 import { DeployedContract } from 'hardhat-deploy/types';
 import { StakingPool } from '../typechain';
 import { getContractAt } from 'hardhat-deploy-ethers/dist/src/helpers';
-import * as roundData from '../data/rounds';
+import * as rounds from '../data/rounds';
 
 interface Args {
-  round: string;
+  round: keyof typeof rounds;
 }
+
+type RoundKey = keyof typeof rounds;
 
 task('testnet:initNewRound', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')
@@ -29,14 +31,16 @@ task('testnet:initNewRound', 'Initiate staking round')
       deployer
     )) as StakingPool;
 
-    const round = roundData[args.round] as roundData.InitRoundData;
+    const roundData: rounds.InitRoundData = rounds[args.round];
+
+    console.log(roundData.rewardPerSecond);
 
     const initTx = await stakingPool.initNewRound(
-      round.rewardPerSecond,
-      round.year,
-      round.month,
-      round.day,
-      round.duration
+      roundData.rewardPerSecond,
+      roundData.year,
+      roundData.month,
+      roundData.day,
+      roundData.duration
     );
     await initTx.wait();
 

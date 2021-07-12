@@ -9,6 +9,8 @@ import 'hardhat-gas-reporter';
 
 import { HardhatUserConfig } from 'hardhat/types';
 
+import './tasks/tasks';
+
 const testMnemonic = 'suggest mirror pulp horn goat wagon body long fortune dirt glass awesome';
 
 const config: HardhatUserConfig = {

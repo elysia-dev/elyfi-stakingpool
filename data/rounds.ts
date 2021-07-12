@@ -1,8 +1,7 @@
-import { BigNumber } from 'ethers';
-import { ethers } from 'hardhat';
+import { ethers } from "ethers";
 
 export interface InitRoundData {
-  rewardPerSecond: BigNumber;
+  rewardPerSecond: ethers.BigNumber;
   year: number;
   month: number;
   day: number;

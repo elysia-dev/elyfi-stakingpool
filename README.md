@@ -12,8 +12,15 @@ yarn deploy:mainnet
 yarn deploy:ropsten
 ```
 
-##Test
+## Test
 
 ```
 yarn test test/*.test.ts
+```
+
+## Task
+
+```
+# Init New Round
+yarn hardhat --network networkname testnet:initNewRound --round {first|second|third...}
 ```
