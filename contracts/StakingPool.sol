@@ -2,10 +2,11 @@
 pragma solidity 0.8.4;
 import './libraries/TimeConverter.sol';
 import './logic/StakingPoolLogic.sol';
+import './interface/IStakingPool.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
-contract StakingPool {
+contract StakingPool is IStakingPool {
   using StakingPoolLogic for PoolData;
   using SafeERC20 for IERC20;
 
@@ -36,38 +37,7 @@ contract StakingPool {
 
   mapping(uint8 => PoolData) internal _rounds;
 
-  error NotInRound();
-  error StakingNotInitiated();
-  error InvaidAmount();
-  error ZeroReward();
-  error OnlyAdmin();
-  error RoundConflicted();
-
-  event Stake(
-    address indexed user,
-    uint256 amount,
-    uint256 userIndex,
-    uint256 userPrincipal,
-    uint8 currentRound
-  );
-  event Withdraw(
-    address indexed user,
-    uint256 amount,
-    uint256 userIndex,
-    uint256 userPrincipal,
-    uint8 currentRound
-  );
-
-  event Claim(address indexed user, uint256 reward, uint256 rewardLeft, uint8 currentRound);
-
-  event InitRound(
-    uint256 rewardPerSecond,
-    uint256 startTimestamp,
-    uint256 endTimestamp,
-    uint256 currentRound
-  );
-
-  function stake(uint256 amount) external {
+  function stake(uint256 amount) external override {
     PoolData storage poolData = _rounds[currentRound];
 
     if (currentRound == 0) revert StakingNotInitiated();
@@ -93,7 +63,7 @@ contract StakingPool {
     );
   }
 
-  function claim(uint8 round) external {
+  function claim(uint8 round) external override {
     PoolData storage poolData = _rounds[round];
 
     uint256 reward = poolData.getUserReward(msg.sender);
@@ -109,7 +79,7 @@ contract StakingPool {
     emit Claim(msg.sender, reward, rewardLeft, currentRound);
   }
 
-  function withdraw(uint256 amount) external {
+  function withdraw(uint256 amount) external override {
     PoolData storage poolData = _rounds[currentRound];
     poolData.updateStakingPool(currentRound, msg.sender);
 
@@ -127,7 +97,7 @@ contract StakingPool {
     );
   }
 
-  function migrate() external {
+  function migrate() external override {
     _migrate();
   }
 
@@ -144,7 +114,7 @@ contract StakingPool {
     }
   }
 
-  function getRewardIndex(uint8 round) external view returns (uint256) {
+  function getRewardIndex(uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
 
     return poolData.getRewardIndex();
@@ -159,35 +129,44 @@ contract StakingPool {
     uint256 lastUpdateTimestamp;
   }
 
-  function getPoolData(uint8 round) external view returns (PoolDataLocalVars memory) {
+  function getPoolData(uint8 round)
+    external
+    view
+    override
+    returns (
+      uint256 rewardPerSecond,
+      uint256 rewardIndex,
+      uint256 startTimestamp,
+      uint256 endTimestamp,
+      uint256 totalPrincipal,
+      uint256 lastUpdateTimestamp
+    )
+  {
     PoolData storage poolData = _rounds[round];
-    PoolDataLocalVars memory vars;
 
-    vars.rewardPerSecond = poolData.rewardPerSecond;
-    vars.rewardIndex = poolData.rewardIndex;
-    vars.startTimestamp = poolData.startTimestamp;
-    vars.endTimestamp = poolData.endTimestamp;
-    vars.totalPrincipal = poolData.totalPrincipal;
-    vars.lastUpdateTimestamp = poolData.lastUpdateTimestamp;
-
-    return vars;
+    return (
+      poolData.rewardPerSecond,
+      poolData.rewardIndex,
+      poolData.startTimestamp,
+      poolData.endTimestamp,
+      poolData.totalPrincipal,
+      poolData.lastUpdateTimestamp
+    );
   }
 
-  struct UserDataLocalVars {
-    uint256 userIndex;
-    uint256 userReward;
-    uint256 userPrincipal;
-  }
-
-  function getUserData(uint8 round, address user) external view returns (UserDataLocalVars memory) {
+  function getUserData(uint8 round, address user)
+    external
+    view
+    override
+    returns (
+      uint256 userIndex,
+      uint256 userReward,
+      uint256 userPrincipal
+    )
+  {
     PoolData storage poolData = _rounds[round];
-    UserDataLocalVars memory vars;
 
-    vars.userIndex = poolData.userIndex[user];
-    vars.userPrincipal = poolData.userPrincipal[user];
-    vars.userReward = poolData.getUserReward(user);
-
-    return vars;
+    return (poolData.userIndex[user], poolData.userPrincipal[user], poolData.getUserReward(user));
   }
 
   function initNewRound(
@@ -196,7 +175,7 @@ contract StakingPool {
     uint8 month,
     uint8 day,
     uint8 duration
-  ) external onlyAdmin {
+  ) external override onlyAdmin {
     PoolData storage poolDataBefore = _rounds[currentRound];
 
     uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day);
