@@ -69,7 +69,7 @@ describe('StakingPool.stake', () => {
     });
   });
 
-  context('stake scenario', async () => {
+  context('staking scenario', async () => {
     const stakeAmount = utils.parseEther('100');
     beforeEach('init the first round', async () => {
       await testEnv.stakingPool

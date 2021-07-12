@@ -43,6 +43,30 @@ contract StakingPool {
   error OnlyAdmin();
   error RoundConflicted();
 
+  event Stake(
+    address indexed user,
+    uint256 amount,
+    uint256 userIndex,
+    uint256 userPrincipal,
+    uint8 currentRound
+  );
+  event Withdraw(
+    address indexed user,
+    uint256 amount,
+    uint256 userIndex,
+    uint256 userPrincipal,
+    uint8 currentRound
+  );
+
+  event Claim(address indexed user, uint256 reward, uint256 rewardLeft, uint8 currentRound);
+
+  event InitRound(
+    uint256 rewardPerSecond,
+    uint256 startTimestamp,
+    uint256 endTimestamp,
+    uint256 currentRound
+  );
+
   function stake(uint256 amount) external {
     PoolData storage poolData = _rounds[currentRound];
 
@@ -53,12 +77,20 @@ contract StakingPool {
 
     if (amount == 0) revert InvaidAmount();
 
-    poolData.updateStakingPool(msg.sender);
+    poolData.updateStakingPool(currentRound, msg.sender);
 
     stakingAsset.safeTransferFrom(msg.sender, address(this), amount);
 
     poolData.userPrincipal[msg.sender] += amount;
     poolData.totalPrincipal += amount;
+
+    emit Stake(
+      msg.sender,
+      amount,
+      poolData.userIndex[msg.sender],
+      poolData.userPrincipal[msg.sender],
+      currentRound
+    );
   }
 
   function claim(uint8 round) external {
@@ -71,16 +103,28 @@ contract StakingPool {
     rewardAsset.safeTransfer(msg.sender, reward);
 
     poolData.userReward[msg.sender] = 0;
+
+    uint256 rewardLeft = rewardAsset.balanceOf(address(this));
+
+    emit Claim(msg.sender, reward, rewardLeft, currentRound);
   }
 
   function withdraw(uint256 amount) external {
     PoolData storage poolData = _rounds[currentRound];
-    poolData.updateStakingPool(msg.sender);
+    poolData.updateStakingPool(currentRound, msg.sender);
 
     stakingAsset.safeTransfer(msg.sender, amount);
 
     poolData.userPrincipal[msg.sender] -= amount;
     poolData.totalPrincipal -= amount;
+
+    emit Withdraw(
+      msg.sender,
+      amount,
+      poolData.userIndex[msg.sender],
+      poolData.userPrincipal[msg.sender],
+      currentRound
+    );
   }
 
   function migrate() external {
@@ -160,9 +204,15 @@ contract StakingPool {
     if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
 
     uint8 newRound = currentRound + 1;
-    _rounds[newRound].initRound(rewardPerSecond, roundstartTimestamp, duration);
+    (uint256 startTimestamp, uint256 endTimestamp) = _rounds[newRound].initRound(
+      rewardPerSecond,
+      roundstartTimestamp,
+      duration
+    );
 
     currentRound = newRound;
+
+    emit InitRound(rewardPerSecond, startTimestamp, endTimestamp, currentRound);
   }
 
   modifier onlyAdmin {

@@ -8,6 +8,13 @@ import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 library StakingPoolLogic {
   using StakingPoolLogic for StakingPool.PoolData;
 
+  event UpdateStakingPool(
+    address indexed user,
+    uint256 newRewardIndex,
+    uint256 totalPrincipal,
+    uint8 currentRound
+  );
+
   function getRewardIndex(StakingPool.PoolData storage poolData) internal view returns (uint256) {
     uint256 currentTimestamp = block.timestamp < poolData.endTimestamp
       ? block.timestamp
@@ -45,10 +52,15 @@ library StakingPoolLogic {
     return result;
   }
 
-  function updateStakingPool(StakingPool.PoolData storage poolData, address user) internal {
+  function updateStakingPool(
+    StakingPool.PoolData storage poolData,
+    uint8 currentRound,
+    address user
+  ) internal {
     poolData.userReward[user] = getUserReward(poolData, user);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
     poolData.lastUpdateTimestamp = block.timestamp;
+    emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal, currentRound);
   }
 
   function initRound(
@@ -56,11 +68,13 @@ library StakingPoolLogic {
     uint256 rewardPerSecond,
     uint256 roundStartTimestamp,
     uint8 duration
-  ) internal {
+  ) internal returns (uint256, uint256) {
     poolData.rewardPerSecond = rewardPerSecond * 1e9;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
     poolData.lastUpdateTimestamp = block.timestamp;
+
+    return (poolData.startTimestamp, poolData.endTimestamp);
   }
 
   function resetUserData(StakingPool.PoolData storage poolData, address user) internal {
