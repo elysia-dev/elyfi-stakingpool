@@ -2,7 +2,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
 import { getRewardAsset, getStakingAsset } from './utils/dependencies';
 
-export const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
   const { deploy } = hre.deployments;
 
@@ -22,5 +22,6 @@ export const deploy: DeployFunction = async function (hre: HardhatRuntimeEnviron
     network: hre.network.name,
   });
 };
+deploy.tags = ['deploy'];
 
-deploy.tags = ['testnet'];
+export default deploy;

@@ -7,6 +7,6 @@ describe('StakingPool.stake', () => {
   context('when current round is over', async () => {
     it('success', async () => {});
 
-    it('reverts when user has migrated', async () => {});
+    it('reverts when user has already migrated', async () => {});
   });
 });
