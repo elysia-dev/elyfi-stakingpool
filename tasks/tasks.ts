@@ -1,8 +1,6 @@
-import { SignerWithAddress } from '@nomiclabs/hardhat-ethers/signers';
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import path from 'path';
-import fs from 'fs';
 import { DeployedContract } from 'hardhat-deploy/types';
 import { StakingPool } from '../typechain';
 import { getContractAt } from 'hardhat-deploy-ethers/dist/src/helpers';
@@ -11,8 +9,6 @@ import * as rounds from '../data/rounds';
 interface Args {
   round: keyof typeof rounds;
 }
-
-type RoundKey = keyof typeof rounds;
 
 task('testnet:initNewRound', 'Initiate staking round')
   .addParam('round', 'The round to initiate, first, second, third... ')

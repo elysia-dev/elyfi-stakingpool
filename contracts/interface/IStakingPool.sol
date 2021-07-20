@@ -8,6 +8,8 @@ interface IStakingPool {
   error ZeroReward();
   error OnlyAdmin();
   error RoundConflicted();
+  error NotEnoughPrincipal(uint256 principal);
+  error NotInitiatedRound(uint8 round, uint8 currentRound);
 
   event Stake(
     address indexed user,
@@ -33,13 +35,15 @@ interface IStakingPool {
     uint256 currentRound
   );
 
+  event Migrate(address user, uint256 amount, uint8 migrateRound, uint8 currentRound);
+
   function stake(uint256 amount) external;
 
   function claim(uint8 round) external;
 
-  function withdraw(uint256 amount) external;
+  function withdraw(uint256 amount, uint8 round) external;
 
-  function migrate() external;
+  function migrate(uint256 amount, uint8 round) external;
 
   function getRewardIndex(uint8 round) external view returns (uint256);
 

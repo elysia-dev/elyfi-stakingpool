@@ -38,82 +38,7 @@ contract StakingPool is IStakingPool {
 
   mapping(uint8 => PoolData) internal _rounds;
 
-  function stake(uint256 amount) external override {
-    PoolData storage poolData = _rounds[currentRound];
-
-    if (currentRound == 0) revert StakingNotInitiated();
-
-    if (poolData.endTimestamp < block.timestamp && poolData.startTimestamp > block.timestamp)
-      revert NotInRound();
-
-    if (amount == 0) revert InvaidAmount();
-
-    poolData.updateStakingPool(currentRound, msg.sender);
-
-    stakingAsset.safeTransferFrom(msg.sender, address(this), amount);
-
-    poolData.userPrincipal[msg.sender] += amount;
-    poolData.totalPrincipal += amount;
-
-    emit Stake(
-      msg.sender,
-      amount,
-      poolData.userIndex[msg.sender],
-      poolData.userPrincipal[msg.sender],
-      currentRound
-    );
-  }
-
-  function claim(uint8 round) external override {
-    PoolData storage poolData = _rounds[round];
-
-    uint256 reward = poolData.getUserReward(msg.sender);
-
-    if (reward == 0) revert ZeroReward();
-
-    rewardAsset.safeTransfer(msg.sender, reward);
-
-    poolData.userReward[msg.sender] = 0;
-
-    uint256 rewardLeft = rewardAsset.balanceOf(address(this));
-
-    emit Claim(msg.sender, reward, rewardLeft, currentRound);
-  }
-
-  function withdraw(uint256 amount) external override {
-    PoolData storage poolData = _rounds[currentRound];
-    poolData.updateStakingPool(currentRound, msg.sender);
-
-    stakingAsset.safeTransfer(msg.sender, amount);
-
-    poolData.userPrincipal[msg.sender] -= amount;
-    poolData.totalPrincipal -= amount;
-
-    emit Withdraw(
-      msg.sender,
-      amount,
-      poolData.userIndex[msg.sender],
-      poolData.userPrincipal[msg.sender],
-      currentRound
-    );
-  }
-
-  function migrate() external override {
-    _migrate();
-  }
-
-  function _migrate() internal {
-    uint256 totalUserReward;
-    uint256 totalUserRound;
-    for (uint8 i = 0; i < currentRound; i++) {
-      PoolData storage poolData = _rounds[i];
-      totalUserReward += poolData.userReward[msg.sender];
-      totalUserRound += poolData.userPrincipal[msg.sender];
-      poolData.userReward[msg.sender] = poolData.userIndex[msg.sender] = poolData.userPrincipal[
-        msg.sender
-      ] = 0;
-    }
-  }
+  /***************** View functions ******************/
 
   function getRewardIndex(uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
@@ -170,6 +95,125 @@ contract StakingPool is IStakingPool {
     return (poolData.userIndex[user], poolData.getUserReward(user), poolData.userPrincipal[user]);
   }
 
+  /***************** External functions ******************/
+
+  function stake(uint256 amount) external override {
+    PoolData storage poolData = _rounds[currentRound];
+
+    if (currentRound == 0) revert StakingNotInitiated();
+
+    if (poolData.endTimestamp < block.timestamp && poolData.startTimestamp > block.timestamp)
+      revert NotInRound();
+
+    if (amount == 0) revert InvaidAmount();
+
+    poolData.updateStakingPool(currentRound, msg.sender);
+
+    stakingAsset.safeTransferFrom(msg.sender, address(this), amount);
+
+    poolData.userPrincipal[msg.sender] += amount;
+    poolData.totalPrincipal += amount;
+
+    emit Stake(
+      msg.sender,
+      amount,
+      poolData.userIndex[msg.sender],
+      poolData.userPrincipal[msg.sender],
+      currentRound
+    );
+  }
+
+  function withdraw(uint256 amount, uint8 round) external override {
+    _withdraw(amount, round);
+  }
+
+  function claim(uint8 round) external override {
+    _claim(msg.sender, round);
+  }
+
+  function migrate(uint256 amount, uint8 round) external override {
+    // Claim reward
+    _claim(msg.sender, round);
+
+    PoolData storage poolData = _rounds[round];
+    uint256 userPrincipal = poolData.userPrincipal[msg.sender];
+    uint256 amountToWithdraw = userPrincipal - amount;
+
+    // Withdraw
+    _withdraw(amountToWithdraw, round);
+
+    // Update current pool
+    PoolData storage currentPoolData = _rounds[currentRound];
+    currentPoolData.updateStakingPool(currentRound, msg.sender);
+
+    // Migrate user principal
+    poolData.userPrincipal[msg.sender] -= amount;
+    currentPoolData.userPrincipal[msg.sender] += amount;
+
+    // Migrate total principal
+    poolData.totalPrincipal -= amount;
+    currentPoolData.totalPrincipal += amount;
+
+    emit Stake(
+      msg.sender,
+      amount,
+      currentPoolData.userIndex[msg.sender],
+      currentPoolData.userPrincipal[msg.sender],
+      currentRound
+    );
+
+    emit Migrate(msg.sender, amount, round, currentRound);
+  }
+
+  /***************** Internal functions ******************/
+
+  function _withdraw(uint256 amount, uint8 round) internal {
+    PoolData storage poolData = _rounds[round];
+    poolData.updateStakingPool(round, msg.sender);
+
+    if (round > currentRound) revert NotInitiatedRound(round, currentRound);
+
+    uint256 amountToWithdraw = amount;
+
+    if (amount == type(uint256).max) {
+      amountToWithdraw = poolData.userPrincipal[msg.sender];
+    }
+
+    if (poolData.userPrincipal[msg.sender] < amountToWithdraw)
+      revert NotEnoughPrincipal(poolData.userPrincipal[msg.sender]);
+
+    poolData.userPrincipal[msg.sender] -= amountToWithdraw;
+    poolData.totalPrincipal -= amountToWithdraw;
+
+    stakingAsset.safeTransfer(msg.sender, amountToWithdraw);
+
+    emit Withdraw(
+      msg.sender,
+      amountToWithdraw,
+      poolData.userIndex[msg.sender],
+      poolData.userPrincipal[msg.sender],
+      currentRound
+    );
+  }
+
+  function _claim(address user, uint8 round) internal {
+    PoolData storage poolData = _rounds[round];
+
+    uint256 reward = poolData.getUserReward(user);
+
+    if (reward == 0) revert ZeroReward();
+
+    poolData.userReward[user] = 0;
+
+    rewardAsset.safeTransfer(user, reward);
+
+    uint256 rewardLeft = rewardAsset.balanceOf(address(this));
+
+    emit Claim(user, reward, rewardLeft, round);
+  }
+
+  /***************** Admin Functions ******************/
+
   function initNewRound(
     uint256 rewardPerSecond,
     uint16 year,
@@ -194,6 +238,8 @@ contract StakingPool is IStakingPool {
 
     emit InitRound(rewardPerSecond, startTimestamp, endTimestamp, currentRound);
   }
+
+  /***************** Modifier ******************/
 
   modifier onlyAdmin {
     if (msg.sender != _admin) revert OnlyAdmin();
