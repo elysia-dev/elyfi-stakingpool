@@ -4,11 +4,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import {
-  expectDataAfterClaim,
-  expectDataAfterStake,
-  expectDataAfterWithdraw,
-} from './utils/expect';
+import { expectDataAfterClaim } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 require('./utils/matchers.ts');
 
@@ -69,7 +65,7 @@ describe('StakingPool.claim reward', () => {
       await testEnv.stakingPool.connect(alice).stake(amount);
     });
 
-    it.only('success', async () => {
+    it('success', async () => {
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);
 
@@ -96,7 +92,7 @@ describe('StakingPool.claim reward', () => {
     });
   });
 
-  context('when user reward is not 0', async () => {
+  context('claim scenario', async () => {
     it('success', async () => {});
   });
 });

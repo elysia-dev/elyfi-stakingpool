@@ -42,7 +42,6 @@ contract StakingPool is IStakingPool {
 
   function getRewardIndex(uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
-
     return poolData.getRewardIndex();
   }
 
@@ -143,6 +142,7 @@ contract StakingPool is IStakingPool {
   }
 
   function migrate(uint256 amount, uint8 round) external override {
+    if (round >= currentRound) revert NotInitiatedRound(round, currentRound);
     // Claim reward
     PoolData storage poolData = _rounds[round];
     if (poolData.getUserReward(msg.sender) != 0) {
@@ -217,7 +217,7 @@ contract StakingPool is IStakingPool {
 
     uint256 reward = poolData.getUserReward(user);
 
-    // if (reward == 0) revert ZeroReward();
+    if (reward == 0) revert ZeroReward();
 
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
