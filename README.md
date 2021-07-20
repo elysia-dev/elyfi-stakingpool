@@ -5,11 +5,13 @@ Elyfi staking pool
 ## Deploy
 
 ```
-#Deploy on live network(mainnet | ropsten)
+#Deploy on live network
 yarn hardhat --network networkname --tags {elPool | elyfiPool}
+(networkname : mainnet | ropsten | ... )
 
-#Deploy on local network(hardhat | ganache)
+#Deploy on local network
 yarn hardhat --network networkname --tags testPool
+(networkname : hardhat | ganache)
 ```
 
 ## Test

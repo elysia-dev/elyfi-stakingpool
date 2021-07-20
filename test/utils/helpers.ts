@@ -17,7 +17,7 @@ export const getUserData = async (
   userData.stakingAssetBalance = await testEnv.stakingAsset.balanceOf(user.address);
   userData.userPrincipal = contractUserData.userPrincipal;
   userData.userIndex = contractUserData.userIndex;
-  userData.userInternalReward = contractUserData.userReward;
+  userData.userPreviousReward = contractUserData.userReward;
   userData.userReward = await testEnv.stakingPool.getUserReward(user.address, roundToGet);
 
   return userData;

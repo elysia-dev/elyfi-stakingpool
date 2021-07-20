@@ -52,7 +52,7 @@ export function calculateDataAfterUpdate(
   const newUserReward = calculateUserReward(poolData, userData, txTimestamp);
   const newIndex = calculateRewardIndex(poolData, txTimestamp);
 
-  newUserData.userInternalReward = newUserData.userReward = newUserReward;
+  newUserData.userPreviousReward = newUserData.userReward = newUserReward;
 
   newPoolData.rewardIndex = newIndex;
   newUserData.userIndex = newIndex;

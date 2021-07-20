@@ -74,7 +74,7 @@ export function expectDataAfterClaim(
   const newUserRewardAssetBalance = userData.rewardAssetBalance.add(accruedReward);
   newUserData.rewardAssetBalance = newUserRewardAssetBalance;
 
-  newUserData.userInternalReward = newUserData.userReward = BigNumber.from(0);
+  newUserData.userPreviousReward = newUserData.userReward = BigNumber.from(0);
 
   const newRewardIndex = calculateRewardIndex(poolData, txTimeStamp);
   newUserData.userIndex = newRewardIndex;
@@ -83,4 +83,60 @@ export function expectDataAfterClaim(
   newPoolData.rewardAssetBalance = newPoolTotalRewardAssetBalance;
 
   return [newPoolData, newUserData];
+}
+
+export function expectPoolDataAfterMigrate(
+  fromPoolData: PoolData,
+  fromUserData: UserData,
+  toPoolData: PoolData,
+  toUserData: UserData,
+  txTimeStamp: BigNumber,
+  amount: BigNumber
+): [[PoolData, UserData], [PoolData, UserData]] {
+  const withdrawAmount = fromUserData.userPrincipal.sub(amount);
+
+  const [newFromPoolData, newFromUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
+    fromPoolData,
+    fromUserData,
+    txTimeStamp
+  );
+  const [newToPoolData, newToUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
+    toPoolData,
+    toUserData,
+    txTimeStamp
+  );
+
+  // reset previous user data
+  newFromUserData.userPreviousReward =
+    newFromUserData.userPrincipal =
+    newFromUserData.userReward =
+      BigNumber.from(0);
+
+  // withdraw user principal
+  const newUserStakingAssetBalance = fromUserData.stakingAssetBalance.add(withdrawAmount);
+  newFromUserData.stakingAssetBalance = newToUserData.stakingAssetBalance =
+    newUserStakingAssetBalance;
+
+  // withdraw total principal
+  const newPoolStakingAssetBalance = fromPoolData.stakingAssetBalance.sub(withdrawAmount);
+  newFromPoolData.stakingAssetBalance = newToPoolData.stakingAssetBalance =
+    newPoolStakingAssetBalance;
+
+  // add previous user principal to the new pool
+  const newUserPrincipalInToPool = toUserData.userPrincipal.add(amount);
+  newToUserData.userPrincipal = newUserPrincipalInToPool;
+
+  // add previous pool total principal to the new pool
+  const newTotalPrincipalInToPool = toPoolData.totalPrincipal.add(amount);
+  newToPoolData.totalPrincipal = newTotalPrincipalInToPool;
+
+  // add accrued previous pool reward to user reward asset balance
+  const accruedPreviousPoolReward = calculateUserReward(fromPoolData, fromUserData, txTimeStamp);
+  const newUserRewardAssetBalance = fromUserData.rewardAssetBalance.add(accruedPreviousPoolReward);
+  newFromUserData.rewardAssetBalance = newToUserData.rewardAssetBalance = newUserRewardAssetBalance;
+
+  return [
+    [newFromPoolData, newFromUserData],
+    [newToPoolData, newToUserData],
+  ];
 }
