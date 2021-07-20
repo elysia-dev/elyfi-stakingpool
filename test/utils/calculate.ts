@@ -9,11 +9,11 @@ export function calculateRewardIndex(poolData: PoolData, txTimeStamp: BigNumber)
     : (timeDiff = txTimeStamp.sub(poolData.endTimestamp));
 
   if (timeDiff.eq(0)) {
-    return BigNumber.from(0);
+    return poolData.rewardIndex;
   }
 
   if (poolData.totalPrincipal.eq(0)) {
-    return BigNumber.from(0);
+    return poolData.rewardIndex;
   }
 
   const rewardIndexDiff = timeDiff
@@ -52,7 +52,7 @@ export function calculateDataAfterUpdate(
   const newUserReward = calculateUserReward(poolData, userData, txTimestamp);
   const newIndex = calculateRewardIndex(poolData, txTimestamp);
 
-  newUserData.userReward = newUserReward;
+  newUserData.userInternalReward = newUserData.userReward = newUserReward;
 
   newPoolData.rewardIndex = newIndex;
   newUserData.userIndex = newIndex;

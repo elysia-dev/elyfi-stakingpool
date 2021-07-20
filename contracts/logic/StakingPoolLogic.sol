@@ -4,6 +4,7 @@ import '../StakingPool.sol';
 import '../libraries/TimeConverter.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
+import 'hardhat/console.sol';
 
 library StakingPoolLogic {
   using StakingPoolLogic for StakingPool.PoolData;
@@ -22,15 +23,24 @@ library StakingPoolLogic {
     uint256 timeDiff = currentTimestamp - poolData.lastUpdateTimestamp;
     uint256 totalPrincipal = poolData.totalPrincipal;
 
+    console.log(
+      'getIndex Time',
+      poolData.rewardIndex,
+      currentTimestamp,
+      poolData.lastUpdateTimestamp
+    );
+
     if (timeDiff == 0) {
       return poolData.rewardIndex;
     }
 
     if (totalPrincipal == 0) {
-      return 0;
+      return poolData.rewardIndex;
     }
 
     uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond * 1e9) / totalPrincipal;
+
+    console.log('getIndex', poolData.rewardIndex, totalPrincipal, rewardIndexDiff);
 
     return poolData.rewardIndex + rewardIndexDiff;
   }
@@ -41,6 +51,7 @@ library StakingPoolLogic {
     returns (uint256)
   {
     if (poolData.userIndex[user] == 0) {
+      console.log('getReward stop');
       return 0;
     }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
@@ -48,6 +59,13 @@ library StakingPoolLogic {
     uint256 balance = poolData.userPrincipal[user];
 
     uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e9;
+
+    console.log(
+      'getReward',
+      getRewardIndex(poolData),
+      poolData.userIndex[user],
+      (balance * indexDiff)
+    );
 
     return result;
   }
@@ -57,9 +75,13 @@ library StakingPoolLogic {
     uint8 currentRound,
     address user
   ) internal {
+    console.log('start');
     poolData.userReward[user] = getUserReward(poolData, user);
+    console.log('123', poolData.userReward[user]);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
+    console.log('456', poolData.rewardIndex);
     poolData.lastUpdateTimestamp = block.timestamp;
+    console.log('contract updatepool userReward', poolData.userReward[user]);
     emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal, currentRound);
   }
 
@@ -72,7 +94,8 @@ library StakingPoolLogic {
     poolData.rewardPerSecond = rewardPerSecond;
     poolData.startTimestamp = roundStartTimestamp;
     poolData.endTimestamp = roundStartTimestamp + (duration * 1 days);
-    poolData.lastUpdateTimestamp = block.timestamp;
+    poolData.lastUpdateTimestamp = roundStartTimestamp;
+    poolData.rewardIndex = 1e18;
 
     return (poolData.startTimestamp, poolData.endTimestamp);
   }

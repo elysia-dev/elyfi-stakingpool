@@ -1,7 +1,7 @@
 import { BigNumber, ethers } from 'ethers';
 import PoolData from '../types/PoolData';
 import UserData from '../types/UserData';
-import { calculateDataAfterUpdate } from './calculate';
+import { calculateDataAfterUpdate, calculateRewardIndex, calculateUserReward } from './calculate';
 
 export function expectDataAfterStake(
   poolData: PoolData,
@@ -22,11 +22,9 @@ export function expectDataAfterStake(
   newUserData.userPrincipal = newUserPrincipal;
 
   const newPoolTotalPrincipal = newPoolData.totalPrincipal.add(amount);
-
   newPoolData.totalPrincipal = newPoolTotalPrincipal;
 
   const newPoolStakingAssetBalance = newPoolData.stakingAssetBalance.add(amount);
-
   newPoolData.stakingAssetBalance = newPoolStakingAssetBalance;
 
   return [newPoolData, newUserData];
@@ -67,21 +65,22 @@ export function expectDataAfterWithdraw(
 export function expectDataAfterClaim(
   poolData: PoolData,
   userData: UserData,
-  txTimeStamp: BigNumber,
-  amount: BigNumber
+  txTimeStamp: BigNumber
 ): [PoolData, UserData] {
   const newPoolData = { ...poolData } as PoolData;
   const newUserData = { ...userData } as UserData;
 
-  const newUserStakingAssetBalance = newUserData.stakingAssetBalance.add(amount);
-  const newUserPrincipal = newUserData.userPrincipal.sub(amount);
+  const accruedReward = calculateUserReward(poolData, userData, txTimeStamp);
+  const newUserRewardAssetBalance = userData.rewardAssetBalance.add(accruedReward);
+  newUserData.rewardAssetBalance = newUserRewardAssetBalance;
 
-  newUserData.stakingAssetBalance = newUserStakingAssetBalance;
-  newUserData.userPrincipal = newUserPrincipal;
+  newUserData.userInternalReward = newUserData.userReward = BigNumber.from(0);
 
-  const newPoolTotalPrincipal = newPoolData.totalPrincipal.sub(amount);
+  const newRewardIndex = calculateRewardIndex(poolData, txTimeStamp);
+  newUserData.userIndex = newRewardIndex;
 
-  newPoolData.totalPrincipal = newPoolTotalPrincipal;
+  const newPoolTotalRewardAssetBalance = poolData.rewardAssetBalance.sub(accruedReward);
+  newPoolData.rewardAssetBalance = newPoolTotalRewardAssetBalance;
 
   return [newPoolData, newUserData];
 }

@@ -48,6 +48,11 @@ contract StakingPool is IStakingPool {
 
   function getUserReward(address user, uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
+    console.log(
+      'contract getUserReward blocktimestamp, below is getReward',
+      block.timestamp,
+      poolData.getUserReward(user)
+    );
 
     return poolData.getUserReward(user);
   }
@@ -108,7 +113,7 @@ contract StakingPool is IStakingPool {
 
     if (currentRound == 0) revert StakingNotInitiated();
 
-    if (poolData.endTimestamp < block.timestamp && poolData.startTimestamp > block.timestamp)
+    if (poolData.endTimestamp < block.timestamp || poolData.startTimestamp > block.timestamp)
       revert NotInRound();
 
     if (amount == 0) revert InvaidAmount();
@@ -206,13 +211,16 @@ contract StakingPool is IStakingPool {
   }
 
   function _claim(address user, uint8 round) internal {
+    if (round > currentRound) revert NotInitiatedRound(round, currentRound);
+
     PoolData storage poolData = _rounds[round];
 
     uint256 reward = poolData.getUserReward(user);
 
-    if (reward == 0) revert ZeroReward();
+    // if (reward == 0) revert ZeroReward();
 
     poolData.userReward[user] = 0;
+    poolData.userIndex[user] = poolData.getRewardIndex();
 
     rewardAsset.safeTransfer(user, reward);
 
