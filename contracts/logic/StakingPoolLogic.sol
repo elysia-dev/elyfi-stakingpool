@@ -75,7 +75,7 @@ library StakingPoolLogic {
     uint8 currentRound,
     address user
   ) internal {
-    console.log('start');
+    console.log('updateStakingPool start');
     poolData.userReward[user] = getUserReward(poolData, user);
     console.log('123', poolData.userReward[user]);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);

@@ -4,7 +4,7 @@ import TestEnv from './types/TestEnv';
 import { RAY, SECONDSPERDAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
-import { expectDataAfterClaim } from './utils/expect';
+import { expectDataAfterClaim, expectDataAfterMigrate } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
 require('./utils/matchers.ts');
 
@@ -43,7 +43,7 @@ describe('StakingPool.claim reward', () => {
     secondRoundInit.year,
     secondRoundInit.month,
     secondRoundInit.day
-  );
+  ).add(10);
 
   const amount = ethers.utils.parseEther('1');
 
@@ -91,34 +91,40 @@ describe('StakingPool.claim reward', () => {
         );
       await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
     });
-    it('success', async () => {
-      await testEnv.stakingPool.connect(alice).migrate(amount.mul(3), firstRound);
-    });
-    it('success', async () => {
-      const poolDataBefore = await getPoolData(testEnv);
-      const userDataBefore = await getUserData(testEnv, alice);
+    it.only('success when user migrate all', async () => {
+      const fromPoolDataBefore = await getPoolData(testEnv, firstRound);
+      const fromUserDataBefore = await getUserData(testEnv, alice, firstRound);
 
-      const claimTx = await testEnv.stakingPool.connect(alice).claim(firstRound);
+      const toPoolDataBefore = await getPoolData(testEnv, secondRound);
+      const toUserDataBefore = await getUserData(testEnv, alice, secondRound);
 
-      const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
-        poolDataBefore,
-        userDataBefore,
-        await getTimestamp(claimTx)
+      console.log('migrationTx start!');
+      const migrateTx = await testEnv.stakingPool.connect(alice).migrate(amount.mul(3), firstRound);
+      console.log('migrationTx end!');
+      const [
+        [expectedFromPoolData, expectedFromUserData],
+        [expectedToPoolData, expectedToUserData],
+      ] = expectDataAfterMigrate(
+        fromPoolDataBefore,
+        fromUserDataBefore,
+        toPoolDataBefore,
+        toUserDataBefore,
+        await getTimestamp(migrateTx),
+        amount.mul(3)
       );
 
-      const poolDataAfter = await getPoolData(testEnv);
-      const userDataAfter = await getUserData(testEnv, alice);
+      const fromPoolDataAfter = await getPoolData(testEnv, firstRound);
+      const fromUserDataAfter = await getUserData(testEnv, alice, firstRound);
 
-      console.log('contract', userDataAfter.userReward.toString());
-      console.log(
-        'contract getReward',
-        (await testEnv.stakingPool.getUserReward(alice.address, firstRound)).toString()
-      );
-      console.log((await getTimestamp(claimTx)).toString());
+      const toPoolDataAfter = await getPoolData(testEnv, secondRound);
+      const toUserDataAfter = await getUserData(testEnv, alice, secondRound);
 
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      expect(fromPoolDataAfter).to.be.equalPoolData(expectedFromPoolData);
+      expect(fromUserDataAfter).to.be.equalUserData(expectedFromUserData);
+      expect(toPoolDataAfter).to.be.equalPoolData(expectedToPoolData);
+      expect(toUserDataAfter).to.be.equalUserData(expectedToUserData);
     });
+    it('success', async () => {});
   });
 
   context('claim scenario', async () => {

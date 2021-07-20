@@ -47,11 +47,11 @@ contract StakingPool is IStakingPool {
 
   function getUserReward(address user, uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
-    console.log(
-      'contract getUserReward blocktimestamp, below is getReward',
-      block.timestamp,
-      poolData.getUserReward(user)
-    );
+    // console.log(
+    //   'contract getUserReward blocktimestamp, below is getReward',
+    //   block.timestamp,
+    //   poolData.getUserReward(user)
+    // );
 
     return poolData.getUserReward(user);
   }
@@ -147,14 +147,14 @@ contract StakingPool is IStakingPool {
     uint256 userPrincipal = poolData.userPrincipal[msg.sender];
     uint256 amountToWithdraw = userPrincipal - amount;
 
-    // Withdraw
-    if (amountToWithdraw != 0) {
-      _withdraw(amountToWithdraw, round);
-    }
-
     // Claim reward
     if (poolData.getUserReward(msg.sender) != 0) {
       _claim(msg.sender, round);
+    }
+
+    // Withdraw
+    if (amountToWithdraw != 0) {
+      _withdraw(amountToWithdraw, round);
     }
 
     // Update current pool
@@ -221,6 +221,8 @@ contract StakingPool is IStakingPool {
 
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
+
+    console.log('contract getUserReward', reward);
 
     rewardAsset.safeTransfer(user, reward);
 

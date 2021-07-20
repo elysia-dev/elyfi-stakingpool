@@ -85,7 +85,7 @@ export function expectDataAfterClaim(
   return [newPoolData, newUserData];
 }
 
-export function expectPoolDataAfterMigrate(
+export function expectDataAfterMigrate(
   fromPoolData: PoolData,
   fromUserData: UserData,
   toPoolData: PoolData,
@@ -93,18 +93,25 @@ export function expectPoolDataAfterMigrate(
   txTimeStamp: BigNumber,
   amount: BigNumber
 ): [[PoolData, UserData], [PoolData, UserData]] {
+  let newFromPoolData = { ...fromPoolData } as PoolData;
+  let newFromUserData = { ...fromUserData } as UserData;
+
   const withdrawAmount = fromUserData.userPrincipal.sub(amount);
 
-  const [newFromPoolData, newFromUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
-    fromPoolData,
-    fromUserData,
-    txTimeStamp
-  );
+  if (!withdrawAmount.eq(0)) {
+    [newFromPoolData, newFromUserData] = calculateDataAfterUpdate(
+      fromPoolData,
+      fromUserData,
+      txTimeStamp
+    );
+  }
   const [newToPoolData, newToUserData]: [PoolData, UserData] = calculateDataAfterUpdate(
     toPoolData,
     toUserData,
     txTimeStamp
   );
+
+  console.log('ts userData after update', fromUserData.userReward.toString());
 
   // reset previous user data
   newFromUserData.userPreviousReward =
@@ -126,6 +133,10 @@ export function expectPoolDataAfterMigrate(
   const newUserPrincipalInToPool = toUserData.userPrincipal.add(amount);
   newToUserData.userPrincipal = newUserPrincipalInToPool;
 
+  // sub previous user principal to the previous pool
+  const newTotalPrincipalInFromPool = fromPoolData.totalPrincipal.sub(amount);
+  newFromPoolData.totalPrincipal = newTotalPrincipalInFromPool;
+
   // add previous pool total principal to the new pool
   const newTotalPrincipalInToPool = toPoolData.totalPrincipal.add(amount);
   newToPoolData.totalPrincipal = newTotalPrincipalInToPool;
@@ -134,6 +145,10 @@ export function expectPoolDataAfterMigrate(
   const accruedPreviousPoolReward = calculateUserReward(fromPoolData, fromUserData, txTimeStamp);
   const newUserRewardAssetBalance = fromUserData.rewardAssetBalance.add(accruedPreviousPoolReward);
   newFromUserData.rewardAssetBalance = newToUserData.rewardAssetBalance = newUserRewardAssetBalance;
+
+  // sub accrued previous pool reward from pool reward asset balance
+  const newPoolRewardAssetBalance = fromPoolData.rewardAssetBalance.sub(accruedPreviousPoolReward);
+  newFromPoolData.rewardAssetBalance = newToPoolData.rewardAssetBalance = newPoolRewardAssetBalance;
 
   return [
     [newFromPoolData, newFromUserData],

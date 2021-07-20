@@ -3,10 +3,11 @@ import PoolData from '../types/PoolData';
 import UserData from '../types/UserData';
 
 export function calculateRewardIndex(poolData: PoolData, txTimeStamp: BigNumber): BigNumber {
-  let timeDiff: BigNumber;
-  timeDiff = txTimeStamp.lt(poolData.endTimestamp)
-    ? (timeDiff = txTimeStamp.sub(poolData.lastUpdateTimestamp))
-    : (timeDiff = txTimeStamp.sub(poolData.endTimestamp));
+  const currentTimestamp = txTimeStamp.lt(poolData.endTimestamp)
+    ? txTimeStamp
+    : poolData.endTimestamp;
+
+  const timeDiff = currentTimestamp.sub(poolData.lastUpdateTimestamp);
 
   if (timeDiff.eq(0)) {
     return poolData.rewardIndex;
@@ -36,7 +37,14 @@ export function calculateUserReward(
   const indexDiff = calculateRewardIndex(poolData, txTimeStamp).sub(userData.userIndex);
   const balance = userData.userPrincipal;
   const rewardAdded = balance.mul(indexDiff).div(1e9);
-  const result = userData.userReward.add(rewardAdded);
+  const result = userData.userPreviousReward.add(rewardAdded);
+
+  console.log(
+    'ts accrued reward: indexDiff ,userReward, result',
+    indexDiff.toString(),
+    userData.userReward.toString(),
+    result.toString()
+  );
 
   return result;
 }
