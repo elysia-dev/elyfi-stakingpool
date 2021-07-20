@@ -1,14 +1,15 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { getRewardAsset, getStakingAsset } from './utils/dependencies';
+import { getElyfi, getDai } from '../utils/getDependencies';
 
-const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
+const elyfiPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   const { deployer } = await hre.getNamedAccounts();
+  hre.deployments;
   const { deploy } = hre.deployments;
 
-  const stakingAsset = await getStakingAsset(hre);
+  const stakingAsset = await getElyfi(hre);
 
-  const rewardAsset = await getRewardAsset(hre);
+  const rewardAsset = await getDai(hre);
 
   const stakingPool = await deploy('StakingPool', {
     from: deployer,
@@ -16,12 +17,10 @@ const deploy: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
     log: true,
   });
 
-  if (hre.network.name === 'ganache') return;
-
   await hre.run('etherscan-verify', {
     network: hre.network.name,
   });
 };
-deploy.tags = ['deploy'];
+elyfiPool.tags = ['elyfiPool'];
 
-export default deploy;
+export default elyfiPool;

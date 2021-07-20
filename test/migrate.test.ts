@@ -63,7 +63,7 @@ describe('StakingPool.claim reward', () => {
     await testEnv.stakingAsset.connect(alice).approve(testEnv.stakingPool.address, RAY);
     await testEnv.stakingAsset.connect(bob).faucet();
     const tx = await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
-    firstRound = await testEnv.stakingPool.firstRound();
+    firstRound = await testEnv.stakingPool.currentRound();
     await advanceTimeTo(await getTimestamp(tx), firstRoundStartTimestamp);
   });
 
@@ -91,15 +91,9 @@ describe('StakingPool.claim reward', () => {
         );
       await advanceTimeTo(await getTimestamp(tx), secondRoundStartTimestamp);
     });
-    it('reverts if user reward is 0', async () => {
-      await expect(testEnv.stakingPool.connect(alice).claim(firstRound)).to.be.revertedWith(
-        'ZeroReward'
-      );
+    it('success', async () => {
+      await testEnv.stakingPool.connect(alice).migrate(amount.mul(3), firstRound);
     });
-    beforeEach('user stakes', async () => {
-      await testEnv.stakingPool.connect(alice).stake(amount);
-    });
-
     it('success', async () => {
       const poolDataBefore = await getPoolData(testEnv);
       const userDataBefore = await getUserData(testEnv, alice);
