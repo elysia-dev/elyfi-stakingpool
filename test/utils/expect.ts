@@ -58,34 +58,30 @@ export function expectDataAfterWithdraw(
   const newPoolTotalPrincipal = newPoolData.totalPrincipal.sub(withdrawAmount);
   newPoolData.totalPrincipal = newPoolTotalPrincipal;
 
-  console.log(
-    '12123',
-    newPoolData.totalPrincipal.toString(),
-    newPoolTotalPrincipal.toString(),
-    withdrawAmount.toString()
-  );
-
   const newPoolStakingAssetBalance = newPoolData.stakingAssetBalance.sub(withdrawAmount);
   newPoolData.stakingAssetBalance = newPoolStakingAssetBalance;
 
   return [newPoolData, newUserData];
 }
 
-// export function expectDataAfterClaim(
-//   poolData: PoolData,
-//   userData: UserData,
-//   txTimeStamp: BigNumber,
-//   amount: BigNumber
-// ): [PoolData, UserData] {
-//   const newUserStakingAssetBalance = newUserData.stakingAssetBalance.add(amount);
-//   const newUserPrincipal = newUserData.userPrincipal.sub(amount);
+export function expectDataAfterClaim(
+  poolData: PoolData,
+  userData: UserData,
+  txTimeStamp: BigNumber,
+  amount: BigNumber
+): [PoolData, UserData] {
+  const newPoolData = { ...poolData } as PoolData;
+  const newUserData = { ...userData } as UserData;
 
-//   newUserData.stakingAssetBalance = newUserStakingAssetBalance;
-//   newUserData.userPrincipal = newUserPrincipal;
+  const newUserStakingAssetBalance = newUserData.stakingAssetBalance.add(amount);
+  const newUserPrincipal = newUserData.userPrincipal.sub(amount);
 
-//   const newPoolTotalPrincipal = newPoolData.totalPrincipal.sub(amount);
+  newUserData.stakingAssetBalance = newUserStakingAssetBalance;
+  newUserData.userPrincipal = newUserPrincipal;
 
-//   newPoolData.totalPrincipal = newPoolTotalPrincipal;
+  const newPoolTotalPrincipal = newPoolData.totalPrincipal.sub(amount);
 
-//   return [newPoolData, newUserData];
-// }
+  newPoolData.totalPrincipal = newPoolTotalPrincipal;
+
+  return [newPoolData, newUserData];
+}

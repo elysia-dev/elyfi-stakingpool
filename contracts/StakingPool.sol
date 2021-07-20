@@ -46,6 +46,12 @@ contract StakingPool is IStakingPool {
     return poolData.getRewardIndex();
   }
 
+  function getUserReward(address user, uint8 round) external view override returns (uint256) {
+    PoolData storage poolData = _rounds[round];
+
+    return poolData.getUserReward(user);
+  }
+
   struct PoolDataLocalVars {
     uint256 rewardPerSecond;
     uint256 rewardIndex;
@@ -92,7 +98,7 @@ contract StakingPool is IStakingPool {
   {
     PoolData storage poolData = _rounds[round];
 
-    return (poolData.userIndex[user], poolData.getUserReward(user), poolData.userPrincipal[user]);
+    return (poolData.userIndex[user], poolData.userReward[user], poolData.userPrincipal[user]);
   }
 
   /***************** External functions ******************/
@@ -133,14 +139,18 @@ contract StakingPool is IStakingPool {
 
   function migrate(uint256 amount, uint8 round) external override {
     // Claim reward
-    _claim(msg.sender, round);
-
     PoolData storage poolData = _rounds[round];
+    if (poolData.getUserReward(msg.sender) != 0) {
+      _claim(msg.sender, round);
+    }
+
     uint256 userPrincipal = poolData.userPrincipal[msg.sender];
     uint256 amountToWithdraw = userPrincipal - amount;
 
     // Withdraw
-    _withdraw(amountToWithdraw, round);
+    if (amountToWithdraw != 0) {
+      _withdraw(amountToWithdraw, round);
+    }
 
     // Update current pool
     PoolData storage currentPoolData = _rounds[currentRound];
@@ -174,7 +184,6 @@ contract StakingPool is IStakingPool {
     if (round > currentRound) revert NotInitiatedRound(round, currentRound);
 
     uint256 amountToWithdraw = amount;
-
     if (amount == type(uint256).max) {
       amountToWithdraw = poolData.userPrincipal[msg.sender];
     }

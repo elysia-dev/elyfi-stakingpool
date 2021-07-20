@@ -47,6 +47,8 @@ interface IStakingPool {
 
   function getRewardIndex(uint8 round) external view returns (uint256);
 
+  function getUserReward(address user, uint8 round) external view returns (uint256);
+
   function getPoolData(uint8 round)
     external
     view
