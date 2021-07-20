@@ -4,14 +4,13 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import path from 'path';
 
 export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
-  const file =
-    (require(getDeploymentPath(hre.network.name, stakingPool.StakingPool)) as DeployedContract) ||
-    undefined;
+  let file: DeployedContract;
 
-  const { deployer } = await hre.getNamedAccounts();
-  const { deploy } = hre.deployments;
-
-  if (file == undefined) {
+  try {
+    file = require(getDeploymentPath(hre.network.name, stakingPool.StakingPool));
+  } catch (e) {
+    const { deployer } = await hre.getNamedAccounts();
+    const { deploy } = hre.deployments;
     const stakingAsset = await getStakingAsset(hre);
     const rewardAsset = await getRewardAsset(hre);
     const StakingPoolLocalDeploy = await deploy('StakingPool', {
@@ -29,14 +28,14 @@ export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<Co
 };
 
 export const getStakingAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
-  const file =
-    (require(getDeploymentPath(hre.network.name, stakingPool.StakingAsset)) as DeployedContract) ||
-    undefined;
+  let file: DeployedContract;
 
-  const { deployer } = await hre.getNamedAccounts();
-  const { deploy } = hre.deployments;
+  try {
+    file = require(getDeploymentPath(hre.network.name, stakingPool.StakingAsset));
+  } catch (e) {
+    const { deployer } = await hre.getNamedAccounts();
+    const { deploy } = hre.deployments;
 
-  if (file == undefined) {
     const StakingAssetLocalDeploy = await deploy('StakingAsset', {
       from: deployer,
       log: true,
@@ -50,24 +49,23 @@ export const getStakingAsset = async (hre: HardhatRuntimeEnvironment): Promise<C
 };
 
 export const getRewardAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
-  const file = require(getDeploymentPath(
-    hre.network.name,
-    stakingPool.RewardAsset
-  )) as DeployedContract;
-  const { deployer } = await hre.getNamedAccounts();
-  const { deploy } = hre.deployments;
+  let file: DeployedContract;
 
-  if (file == undefined) {
-    const StakingAssetLocalDeploy = await deploy('RewardAsset', {
+  try {
+    file = require(getDeploymentPath(hre.network.name, stakingPool.RewardAsset));
+  } catch (e) {
+    const { deployer } = await hre.getNamedAccounts();
+    const { deploy } = hre.deployments;
+
+    const RewardAssetLocalDeploy = await deploy('RewardAsset', {
       from: deployer,
       log: true,
     });
     return await hre.ethers.getContractAt(
-      StakingAssetLocalDeploy.abi,
-      StakingAssetLocalDeploy.address
+      RewardAssetLocalDeploy.abi,
+      RewardAssetLocalDeploy.address
     );
   }
-
   return await hre.ethers.getContractAt(file.abi, file.address);
 };
 
