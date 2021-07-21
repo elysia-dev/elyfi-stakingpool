@@ -175,9 +175,8 @@ describe('StakingPool.migrate', () => {
       const toPoolDataBefore = await getPoolData(testEnv, secondRound);
       const toUserDataBefore = await getUserData(testEnv, alice, secondRound);
 
-      console.log('migrationTx start!');
       const migrateTx = await testEnv.stakingPool.connect(alice).migrate(amount.mul(2), firstRound);
-      console.log('migrationTx end!');
+
       const [
         [expectedFromPoolData, expectedFromUserData],
         [expectedToPoolData, expectedToUserData],
@@ -190,7 +189,38 @@ describe('StakingPool.migrate', () => {
         amount.mul(2)
       );
 
-      console.log('getter start');
+      const fromPoolDataAfter = await getPoolData(testEnv, firstRound);
+      const fromUserDataAfter = await getUserData(testEnv, alice, firstRound);
+
+      const toPoolDataAfter = await getPoolData(testEnv, secondRound);
+      const toUserDataAfter = await getUserData(testEnv, alice, secondRound);
+
+      expect(fromPoolDataAfter).to.be.equalPoolData(expectedFromPoolData);
+      expect(fromUserDataAfter).to.be.equalUserData(expectedFromUserData);
+      expect(toPoolDataAfter).to.be.equalPoolData(expectedToPoolData);
+      expect(toUserDataAfter).to.be.equalUserData(expectedToUserData);
+    });
+
+    it('success when user migrates after staking', async () => {
+      const fromPoolDataBefore = await getPoolData(testEnv, firstRound);
+      const fromUserDataBefore = await getUserData(testEnv, alice, firstRound);
+
+      const toPoolDataBefore = await getPoolData(testEnv, secondRound);
+      const toUserDataBefore = await getUserData(testEnv, alice, secondRound);
+
+      const migrateTx = await testEnv.stakingPool.connect(alice).migrate(amount.mul(2), firstRound);
+
+      const [
+        [expectedFromPoolData, expectedFromUserData],
+        [expectedToPoolData, expectedToUserData],
+      ] = expectDataAfterMigrate(
+        fromPoolDataBefore,
+        fromUserDataBefore,
+        toPoolDataBefore,
+        toUserDataBefore,
+        await getTimestamp(migrateTx),
+        amount.mul(2)
+      );
 
       const fromPoolDataAfter = await getPoolData(testEnv, firstRound);
       const fromUserDataAfter = await getUserData(testEnv, alice, firstRound);

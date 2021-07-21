@@ -47,12 +47,6 @@ contract StakingPool is IStakingPool {
 
   function getUserReward(address user, uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
-    // console.log(
-    //   'contract getUserReward blocktimestamp, below is getReward',
-    //   block.timestamp,
-    //   poolData.getUserReward(user)
-    // );
-
     return poolData.getUserReward(user);
   }
 

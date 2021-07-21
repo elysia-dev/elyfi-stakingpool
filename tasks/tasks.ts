@@ -5,6 +5,7 @@ import { DeployedContract } from 'hardhat-deploy/types';
 import { StakingPool } from '../typechain';
 import { getContractAt } from 'hardhat-deploy-ethers/dist/src/helpers';
 import * as rounds from '../data/rounds';
+import { getStakingPool } from '../utils/getDeployedContracts';
 
 interface Args {
   round: keyof typeof rounds;
@@ -16,16 +17,7 @@ task('testnet:initNewRound', 'Initiate staking round')
     let stakingPool: StakingPool;
     const [deployer] = await hre.ethers.getSigners();
 
-    const contractPath = path.join(__dirname, '..', 'deployments', hre.network.name);
-
-    const deployedStakingPool = require(path.join(contractPath, 'StakingPool')) as DeployedContract;
-
-    stakingPool = (await getContractAt(
-      hre,
-      deployedStakingPool.abi,
-      deployedStakingPool.address,
-      deployer
-    )) as StakingPool;
+    stakingPool = await getStakingPool(hre);
 
     const roundData: rounds.InitRoundData = rounds[args.round];
 
