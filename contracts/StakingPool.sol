@@ -254,6 +254,10 @@ contract StakingPool is IStakingPool {
     emit InitRound(rewardPerSecond, startTimestamp, endTimestamp, currentRound);
   }
 
+  function retrieveResidue() external onlyAdmin {
+    rewardAsset.safeTransfer(_admin, rewardAsset.balanceOf(address(this)));
+  }
+
   /***************** Modifier ******************/
 
   modifier onlyAdmin {

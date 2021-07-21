@@ -1,9 +1,6 @@
 import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
-import path from 'path';
-import { DeployedContract } from 'hardhat-deploy/types';
 import { StakingPool } from '../typechain';
-import { getContractAt } from 'hardhat-deploy-ethers/dist/src/helpers';
 import * as rounds from '../data/rounds';
 import { getStakingPool } from '../utils/getDeployedContracts';
 
