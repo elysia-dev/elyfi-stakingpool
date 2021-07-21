@@ -3,7 +3,8 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { StakingAsset, StakingPool } from '../typechain';
 import * as rounds from '../data/rounds';
 import { getRewardAsset, getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
-import { ethers, utils } from 'ethers';
+import { BigNumber, ethers, utils } from 'ethers';
+import { toTimestamp } from '../test/utils/time';
 
 interface Args {
   round: keyof typeof rounds;
@@ -16,26 +17,34 @@ task('testnet:initNewRound', 'Initiate staking round')
     let stakingPool: StakingPool;
     const [deployer] = await hre.ethers.getSigners();
 
-    stakingPool = await getStakingPool(hre);
-    const rewardAsset = await getStakingAsset(hre);
+    // stakingPool = await getStakingPool(hre);
+    // const rewardAsset = await getStakingAsset(hre);
 
     const roundData: rounds.InitRoundData = rounds[args.round];
 
-    const initTx = await stakingPool
-      .connect(deployer)
-      .initNewRound(
-        roundData.rewardPerSecond,
-        roundData.year,
-        roundData.month,
-        roundData.day,
-        roundData.duration
-      );
-    await initTx.wait();
+    const timeStamp = toTimestamp(
+      BigNumber.from(roundData.year),
+      BigNumber.from(roundData.month),
+      BigNumber.from(roundData.day)
+    );
 
-    const transferTx = await rewardAsset
-      .connect(deployer)
-      .transfer(stakingPool.address, utils.parseEther('1000000'));
-    await transferTx.wait();
+    console.log(timeStamp.toString());
+
+    // const initTx = await stakingPool
+    //   .connect(deployer)
+    //   .initNewRound(
+    //     roundData.rewardPerSecond,
+    //     roundData.year,
+    //     roundData.month,
+    //     roundData.day,
+    //     roundData.duration
+    //   );
+    // await initTx.wait();
+
+    // const transferTx = await rewardAsset
+    //   .connect(deployer)
+    //   .transfer(stakingPool.address, utils.parseEther('1000000'));
+    // await transferTx.wait();
 
     console.log('Round initiated');
   });
@@ -87,4 +96,54 @@ task('testnet:withdraw', 'Unstake asset')
     await withdrawTx.wait();
 
     console.log(`Withdraw amount ${args.amount} success `);
+  });
+
+task('mainnet:initNewRound:elPool', 'Initiate staking round')
+  .addParam('round', 'The round to initiate, first, second, third... ')
+  .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
+    let stakingPool: StakingPool;
+    const [deployer] = await hre.ethers.getSigners();
+
+    stakingPool = await getStakingPool(hre);
+
+    const roundData: rounds.InitRoundData = rounds[args.round];
+    const rewardPerSecond = ethers.utils.parseEther('25000').div(86400);
+
+    const initTx = await stakingPool
+      .connect(deployer)
+      .initNewRound(
+        rewardPerSecond,
+        roundData.year,
+        roundData.month,
+        roundData.day,
+        roundData.duration
+      );
+    await initTx.wait();
+
+    console.log('Round initiated');
+  });
+
+task('mainnet:initNewRound:elyfiPool', 'Initiate staking round')
+  .addParam('round', 'The round to initiate, first, second, third... ')
+  .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
+    let stakingPool: StakingPool;
+    const [deployer] = await hre.ethers.getSigners();
+
+    stakingPool = await getStakingPool(hre);
+
+    const roundData: rounds.InitRoundData = rounds[args.round];
+    const rewardPerSecond = ethers.utils.parseEther('1250').div(86400);
+
+    const initTx = await stakingPool
+      .connect(deployer)
+      .initNewRound(
+        rewardPerSecond,
+        roundData.year,
+        roundData.month,
+        roundData.day,
+        roundData.duration
+      );
+    await initTx.wait();
+
+    console.log('Round initiated');
   });
