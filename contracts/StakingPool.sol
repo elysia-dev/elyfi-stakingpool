@@ -217,12 +217,6 @@ contract StakingPool is IStakingPool {
 
     if (reward == 0) revert ZeroReward();
 
-    console.log(
-      'contract UserIndex updateBefore, after',
-      poolData.userIndex[user],
-      poolData.getRewardIndex()
-    );
-
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
 

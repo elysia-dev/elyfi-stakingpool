@@ -23,13 +23,6 @@ library StakingPoolLogic {
     uint256 timeDiff = currentTimestamp - poolData.lastUpdateTimestamp;
     uint256 totalPrincipal = poolData.totalPrincipal;
 
-    console.log(
-      'getIndex Time',
-      poolData.rewardIndex,
-      currentTimestamp,
-      poolData.lastUpdateTimestamp
-    );
-
     if (timeDiff == 0) {
       return poolData.rewardIndex;
     }
@@ -40,8 +33,6 @@ library StakingPoolLogic {
 
     uint256 rewardIndexDiff = (timeDiff * poolData.rewardPerSecond * 1e9) / totalPrincipal;
 
-    console.log('getIndex', poolData.rewardIndex, totalPrincipal, rewardIndexDiff);
-
     return poolData.rewardIndex + rewardIndexDiff;
   }
 
@@ -51,7 +42,6 @@ library StakingPoolLogic {
     returns (uint256)
   {
     if (poolData.userIndex[user] == 0) {
-      console.log('getReward stop');
       return 0;
     }
     uint256 indexDiff = getRewardIndex(poolData) - poolData.userIndex[user];
@@ -59,13 +49,6 @@ library StakingPoolLogic {
     uint256 balance = poolData.userPrincipal[user];
 
     uint256 result = poolData.userReward[user] + (balance * indexDiff) / 1e9;
-
-    console.log(
-      'getReward',
-      getRewardIndex(poolData),
-      poolData.userIndex[user],
-      (balance * indexDiff)
-    );
 
     return result;
   }

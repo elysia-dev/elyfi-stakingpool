@@ -21,8 +21,6 @@ task('testnet:initNewRound', 'Initiate staking round')
 
     const roundData: rounds.InitRoundData = rounds[args.round];
 
-    console.log(roundData.rewardPerSecond);
-
     const initTx = await stakingPool.initNewRound(
       roundData.rewardPerSecond,
       roundData.year,

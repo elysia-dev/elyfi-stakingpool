@@ -111,8 +111,6 @@ export function expectDataAfterMigrate(
     txTimeStamp
   );
 
-  console.log('ts userData after update', fromUserData.userReward.toString());
-
   // reset previous user data
   newFromUserData.userPreviousReward =
     newFromUserData.userPrincipal =

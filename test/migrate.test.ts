@@ -105,9 +105,8 @@ describe('StakingPool.migrate', () => {
       const toPoolDataBefore = await getPoolData(testEnv, secondRound);
       const toUserDataBefore = await getUserData(testEnv, alice, secondRound);
 
-      console.log('migrationTx start!');
       const migrateTx = await testEnv.stakingPool.connect(alice).migrate(amount.mul(3), firstRound);
-      console.log('migrationTx end!');
+
       const [
         [expectedFromPoolData, expectedFromUserData],
         [expectedToPoolData, expectedToUserData],
@@ -139,9 +138,8 @@ describe('StakingPool.migrate', () => {
       const toPoolDataBefore = await getPoolData(testEnv, secondRound);
       const toUserDataBefore = await getUserData(testEnv, alice, secondRound);
 
-      console.log('migrationTx start!');
       const migrateTx = await testEnv.stakingPool.connect(alice).migrate(0, firstRound);
-      console.log('migrationTx end!');
+
       const [
         [expectedFromPoolData, expectedFromUserData],
         [expectedToPoolData, expectedToUserData],
@@ -153,8 +151,6 @@ describe('StakingPool.migrate', () => {
         await getTimestamp(migrateTx),
         BigNumber.from(0)
       );
-
-      console.log('getter start');
 
       const fromPoolDataAfter = await getPoolData(testEnv, firstRound);
       const fromUserDataAfter = await getUserData(testEnv, alice, firstRound);

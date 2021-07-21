@@ -39,13 +39,6 @@ export function calculateUserReward(
   const rewardAdded = balance.mul(indexDiff).div(1e9);
   const result = userData.userPreviousReward.add(rewardAdded);
 
-  console.log(
-    'ts accrued reward: indexDiff ,userReward, result',
-    indexDiff.toString(),
-    userData.userReward.toString(),
-    result.toString()
-  );
-
   return result;
 }
 
