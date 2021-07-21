@@ -145,6 +145,9 @@ contract StakingPool is IStakingPool {
     if (round >= currentRound) revert NotInitiatedRound(round, currentRound);
     PoolData storage poolData = _rounds[round];
     uint256 userPrincipal = poolData.userPrincipal[msg.sender];
+
+    if (userPrincipal == 0) revert ZeroPrincipal();
+
     uint256 amountToWithdraw = userPrincipal - amount;
 
     // Claim reward
@@ -184,7 +187,6 @@ contract StakingPool is IStakingPool {
 
   function _withdraw(uint256 amount, uint8 round) internal {
     PoolData storage poolData = _rounds[round];
-    poolData.updateStakingPool(round, msg.sender);
 
     if (round > currentRound) revert NotInitiatedRound(round, currentRound);
 
@@ -195,6 +197,8 @@ contract StakingPool is IStakingPool {
 
     if (poolData.userPrincipal[msg.sender] < amountToWithdraw)
       revert NotEnoughPrincipal(poolData.userPrincipal[msg.sender]);
+
+    poolData.updateStakingPool(round, msg.sender);
 
     poolData.userPrincipal[msg.sender] -= amountToWithdraw;
     poolData.totalPrincipal -= amountToWithdraw;
@@ -219,10 +223,14 @@ contract StakingPool is IStakingPool {
 
     if (reward == 0) revert ZeroReward();
 
+    console.log(
+      'contract UserIndex updateBefore, after',
+      poolData.userIndex[user],
+      poolData.getRewardIndex()
+    );
+
     poolData.userReward[user] = 0;
     poolData.userIndex[user] = poolData.getRewardIndex();
-
-    console.log('contract getUserReward', reward);
 
     rewardAsset.safeTransfer(user, reward);
 

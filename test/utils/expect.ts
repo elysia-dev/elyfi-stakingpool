@@ -119,23 +119,27 @@ export function expectDataAfterMigrate(
     newFromUserData.userReward =
       BigNumber.from(0);
 
-  // withdraw user principal
+  // update user index for claim
+  const newUserIndexInFromPool = calculateRewardIndex(fromPoolData, txTimeStamp);
+  newFromUserData.userIndex = newUserIndexInFromPool;
+
+  // withdraw user staking asset balance
   const newUserStakingAssetBalance = fromUserData.stakingAssetBalance.add(withdrawAmount);
   newFromUserData.stakingAssetBalance = newToUserData.stakingAssetBalance =
     newUserStakingAssetBalance;
 
-  // withdraw total principal
+  // withdraw total pool staking asset balance
   const newPoolStakingAssetBalance = fromPoolData.stakingAssetBalance.sub(withdrawAmount);
   newFromPoolData.stakingAssetBalance = newToPoolData.stakingAssetBalance =
     newPoolStakingAssetBalance;
 
+  // sub previous user principal to the previous pool
+  const newTotalPrincipalInFromPool = fromPoolData.totalPrincipal.sub(fromUserData.userPrincipal);
+  newFromPoolData.totalPrincipal = newTotalPrincipalInFromPool;
+
   // add previous user principal to the new pool
   const newUserPrincipalInToPool = toUserData.userPrincipal.add(amount);
   newToUserData.userPrincipal = newUserPrincipalInToPool;
-
-  // sub previous user principal to the previous pool
-  const newTotalPrincipalInFromPool = fromPoolData.totalPrincipal.sub(amount);
-  newFromPoolData.totalPrincipal = newTotalPrincipalInFromPool;
 
   // add previous pool total principal to the new pool
   const newTotalPrincipalInToPool = toPoolData.totalPrincipal.add(amount);

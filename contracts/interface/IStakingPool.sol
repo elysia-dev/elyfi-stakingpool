@@ -10,6 +10,7 @@ interface IStakingPool {
   error RoundConflicted();
   error NotEnoughPrincipal(uint256 principal);
   error NotInitiatedRound(uint8 round, uint8 currentRound);
+  error ZeroPrincipal();
 
   event Stake(
     address indexed user,

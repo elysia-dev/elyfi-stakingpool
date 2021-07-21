@@ -1,7 +1,7 @@
 import { BigNumber, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
-import { RAY, SECONDSPERDAY } from './utils/constants';
+import { RAY } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake } from './utils/expect';
@@ -23,7 +23,6 @@ describe('StakingPool.stake', () => {
   const duration = BigNumber.from(30);
 
   const startTimestamp = toTimestamp(year, month, day);
-  const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
 
   beforeEach('deploy staking pool', async () => {
     testEnv = await setTestEnv();
@@ -38,6 +37,7 @@ describe('StakingPool.stake', () => {
 
   context('when the first round initiated', async () => {
     const stakeAmount = utils.parseEther('100');
+
     beforeEach('init the first round', async () => {
       await testEnv.stakingPool
         .connect(deployer)
@@ -98,6 +98,7 @@ describe('StakingPool.stake', () => {
       const tx = await testEnv.stakingAsset.connect(bob).approve(testEnv.stakingPool.address, RAY);
       await advanceTimeTo(await getTimestamp(tx), startTimestamp);
     });
+
     it('first stake and second stake from alice', async () => {
       await testEnv.stakingPool.connect(alice).stake(stakeAmount);
 

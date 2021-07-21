@@ -65,7 +65,9 @@ export function calculateDataAfterUpdate(
   newPoolData.rewardIndex = newIndex;
   newUserData.userIndex = newIndex;
 
-  newPoolData.lastUpdateTimestamp = txTimestamp;
+  newPoolData.lastUpdateTimestamp = txTimestamp.lt(poolData.endTimestamp)
+    ? txTimestamp
+    : poolData.endTimestamp;
 
   return [newPoolData, newUserData];
 }

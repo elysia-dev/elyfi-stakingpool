@@ -61,38 +61,33 @@ describe('StakingPool.claim reward', () => {
         'ZeroReward'
       );
     });
-    beforeEach('user stakes', async () => {
-      await testEnv.stakingPool.connect(alice).stake(amount);
-    });
+    context('user stakes ', async () => {
+      beforeEach('user stakes', async () => {
+        await testEnv.stakingPool.connect(alice).stake(amount);
+      });
 
-    it('success', async () => {
-      const poolDataBefore = await getPoolData(testEnv);
-      const userDataBefore = await getUserData(testEnv, alice);
+      it('success', async () => {
+        const poolDataBefore = await getPoolData(testEnv);
+        const userDataBefore = await getUserData(testEnv, alice);
 
-      const claimTx = await testEnv.stakingPool.connect(alice).claim(currentRound);
+        const claimTx = await testEnv.stakingPool.connect(alice).claim(currentRound);
 
-      const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
-        poolDataBefore,
-        userDataBefore,
-        await getTimestamp(claimTx)
-      );
+        const [expectedPoolData, expectedUserData] = expectDataAfterClaim(
+          poolDataBefore,
+          userDataBefore,
+          await getTimestamp(claimTx)
+        );
 
-      const poolDataAfter = await getPoolData(testEnv);
-      const userDataAfter = await getUserData(testEnv, alice);
+        const poolDataAfter = await getPoolData(testEnv);
+        const userDataAfter = await getUserData(testEnv, alice);
 
-      console.log('contract', userDataAfter.userReward.toString());
-      console.log(
-        'contract getReward',
-        (await testEnv.stakingPool.getUserReward(alice.address, currentRound)).toString()
-      );
-      console.log((await getTimestamp(claimTx)).toString());
-
-      expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
-      expect(userDataAfter).to.be.equalUserData(expectedUserData);
+        expect(poolDataAfter).to.be.equalPoolData(expectedPoolData);
+        expect(userDataAfter).to.be.equalUserData(expectedUserData);
+      });
     });
   });
 
-  context('claim scenario', async () => {
+  context('claim after another round initiated', async () => {
     it('success', async () => {});
   });
 });

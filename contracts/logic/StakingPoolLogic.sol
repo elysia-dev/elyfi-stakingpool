@@ -80,7 +80,10 @@ library StakingPoolLogic {
     console.log('123', poolData.userReward[user]);
     poolData.rewardIndex = poolData.userIndex[user] = getRewardIndex(poolData);
     console.log('456', poolData.rewardIndex);
-    poolData.lastUpdateTimestamp = block.timestamp;
+    poolData.lastUpdateTimestamp = block.timestamp < poolData.endTimestamp
+      ? block.timestamp
+      : poolData.endTimestamp;
+
     console.log('contract updatepool userReward', poolData.userReward[user]);
     emit UpdateStakingPool(msg.sender, poolData.rewardIndex, poolData.totalPrincipal, currentRound);
   }
