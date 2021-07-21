@@ -1,8 +1,8 @@
 import 'dotenv/config';
+import '@typechain/hardhat';
 import '@nomiclabs/hardhat-waffle';
 import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
-import 'hardhat-typechain';
 import 'hardhat-deploy-ethers';
 import 'hardhat-deploy';
 import 'hardhat-gas-reporter';
