@@ -8,12 +8,13 @@ export interface InitRoundData {
   duration: number;
 }
 
+// It is test data 
 export const first: InitRoundData = {
   rewardPerSecond: ethers.utils.parseEther('1'),
   year: 2021,
   month: 7,
-  day: 10,
-  duration: 30,
+  day: 21,
+  duration: 20,
 };
 
 export const second: InitRoundData = {

@@ -237,7 +237,7 @@ contract StakingPool is IStakingPool {
   ) external override onlyAdmin {
     PoolData storage poolDataBefore = _rounds[currentRound];
 
-    uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day);
+    uint256 roundstartTimestamp = TimeConverter.toTimestamp(year, month, day, 10);
 
     if (roundstartTimestamp < poolDataBefore.endTimestamp) revert RoundConflicted();
 

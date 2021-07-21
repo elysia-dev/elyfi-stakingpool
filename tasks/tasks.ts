@@ -3,8 +3,7 @@ import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { StakingAsset, StakingPool } from '../typechain';
 import * as rounds from '../data/rounds';
 import { getRewardAsset, getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
-import { BigNumber, ethers, utils } from 'ethers';
-import { toTimestamp } from '../test/utils/time';
+import { ethers, utils } from 'ethers';
 
 interface Args {
   round: keyof typeof rounds;
@@ -17,34 +16,26 @@ task('testnet:initNewRound', 'Initiate staking round')
     let stakingPool: StakingPool;
     const [deployer] = await hre.ethers.getSigners();
 
-    // stakingPool = await getStakingPool(hre);
-    // const rewardAsset = await getStakingAsset(hre);
+    stakingPool = await getStakingPool(hre);
+    const rewardAsset = await getStakingAsset(hre);
 
     const roundData: rounds.InitRoundData = rounds[args.round];
 
-    const timeStamp = toTimestamp(
-      BigNumber.from(roundData.year),
-      BigNumber.from(roundData.month),
-      BigNumber.from(roundData.day)
-    );
+    const initTx = await stakingPool
+      .connect(deployer)
+      .initNewRound(
+        roundData.rewardPerSecond,
+        roundData.year,
+        roundData.month,
+        roundData.day,
+        roundData.duration
+      );
+    await initTx.wait();
 
-    console.log(timeStamp.toString());
-
-    // const initTx = await stakingPool
-    //   .connect(deployer)
-    //   .initNewRound(
-    //     roundData.rewardPerSecond,
-    //     roundData.year,
-    //     roundData.month,
-    //     roundData.day,
-    //     roundData.duration
-    //   );
-    // await initTx.wait();
-
-    // const transferTx = await rewardAsset
-    //   .connect(deployer)
-    //   .transfer(stakingPool.address, utils.parseEther('1000000'));
-    // await transferTx.wait();
+    const transferTx = await rewardAsset
+      .connect(deployer)
+      .transfer(stakingPool.address, utils.parseEther('1000000'));
+    await transferTx.wait();
 
     console.log('Round initiated');
   });
