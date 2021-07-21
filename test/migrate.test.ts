@@ -198,6 +198,7 @@ describe('StakingPool.migrate', () => {
     });
 
     it('success when user migrates after staking', async () => {
+      await testEnv.stakingPool.connect(alice).stake(amount);
       const fromPoolDataBefore = await getPoolData(testEnv, firstRound);
       const fromUserDataBefore = await getUserData(testEnv, alice, firstRound);
 

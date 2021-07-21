@@ -1,13 +1,11 @@
 import 'dotenv/config';
 import '@typechain/hardhat';
-import '@nomiclabs/hardhat-waffle';
-import '@nomiclabs/hardhat-ethers';
 import '@nomiclabs/hardhat-etherscan';
 import 'hardhat-deploy-ethers';
 import 'hardhat-deploy';
-import 'hardhat-gas-reporter';
 
 import { HardhatUserConfig } from 'hardhat/types';
+import './tasks/tasks';
 
 const testMnemonic = 'suggest mirror pulp horn goat wagon body long fortune dirt glass awesome';
 
