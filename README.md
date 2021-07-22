@@ -14,21 +14,31 @@ Please note that this repository is under development.
 
 ### Elyfi
 
-- The elyfi main website : https://defi.elysia.land/
+- [The elyfi main website](https://defi.elysia.land/)
 
 ### Documents
 
 The documentation of Elyfi is in the following link.
 
-- The elyfi docs : https://elyfi-docs.elysia.land/v/eng/
-
-At the
+- [The elyfi docs](https://elyfi-docs.elysia.land/v/eng/)
 
 ### Community
 
-For questions about
+For questions about elyfi staking pool, you can join our [telegram channel](https://t.me/elysia_official)
 
-##### Installation
+### Development
+
+#### Set up environment variables
+
+Set up `.env` file in the project directory and add the following environment variables:
+
+```
+ADMIN= {admin private key for production}
+TEST_MNEMONIC= {mnemonic phrase for testnet}
+ETHERSCAN_API_KEY= {etherscan api key for verifying}
+```
+
+#### Deployments
 
 ```
 #Deploy on live network
@@ -70,6 +80,9 @@ In the production, admin can initiate round by executing tasks.
 
 ```
 # Init New Round in ElPool
-yarn hardhat --network networkname testnet:initNewRound --round {first|second|third...}
+yarn hardhat --network networkname mainnet:initNewRound:elPool --round {first|second|third...}
+
+# Init New Round in ElfiPool
+yarn hardhat --network networkname mainnet:initNewRound:elyfiPool --round {first|second|third...}
 
 ```
