@@ -70,7 +70,8 @@ task('testnet:stake', 'Stake asset')
   });
 
 task('testnet:withdraw', 'Unstake asset')
-  .addParam('amount', 'The amount to stake')
+  .addParam('amount', 'The amount to withdraw')
+  .addParam('round', 'The round to withdraw')
   .setAction(async (args: Args, hre: HardhatRuntimeEnvironment) => {
     let stakingPool: StakingPool;
     const [deployer] = await hre.ethers.getSigners();
