@@ -6,6 +6,13 @@ import './interface/IStakingPool.sol';
 import '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import '@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol';
 
+/// @title Elyfi StakingPool contract
+/// @notice Users can stake their asset and earn reward for their staking.
+/// The reward calculation is based on the reward index and user balance. The amount of reward index change
+/// is inversely proportional to the total amount of supply. Accrued rewards can be obtained by multiplying
+/// the difference between the user index and the current index by the user balance. User index and the pool
+/// index is updated and aligned with in the staking and withdrawing action.
+/// @author Elysia
 contract StakingPool is IStakingPool {
   using StakingPoolLogic for PoolData;
   using SafeERC20 for IERC20;
@@ -58,6 +65,14 @@ contract StakingPool is IStakingPool {
     uint256 lastUpdateTimestamp;
   }
 
+  /// @notice Returns the state and data of the round
+  /// @param round The round of the pool
+  /// @return rewardPerSecond The total reward accrued per second in the round
+  /// @return rewardIndex The reward index of the round
+  /// @return startTimestamp The start timestamp of the round
+  /// @return endTimestamp The end timestamp of the round
+  /// @return totalPrincipal The total staked amount of the round
+  /// @return lastUpdateTimestamp The last update timestamp of the round
   function getPoolData(uint8 round)
     external
     view
@@ -83,6 +98,9 @@ contract StakingPool is IStakingPool {
     );
   }
 
+  /// @notice Returns the state and data of the user
+  /// @param round The round of the pool
+  /// @param user The user address
   function getUserData(uint8 round, address user)
     external
     view
