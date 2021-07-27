@@ -100,6 +100,8 @@ contract StakingPool is IStakingPool {
 
   /***************** External functions ******************/
 
+  /// @notice Stake the amount of staking asset to pool contract and update data.
+  /// @param amount Amount to stake.
   function stake(uint256 amount) external override {
     PoolData storage poolData = _rounds[currentRound];
 
@@ -126,14 +128,22 @@ contract StakingPool is IStakingPool {
     );
   }
 
+  /// @notice Withdraw the amount of principal from the pool contract and update data
+  /// @param amount Amount to withdraw
+  /// @param round The round to withdraw
   function withdraw(uint256 amount, uint8 round) external override {
     _withdraw(amount, round);
   }
 
+  /// @notice Transfer accrued reward to msg.sender. User accrued reward will be reset and user reward index will be set to the current reward index.
+  /// @param round The round to claim
   function claim(uint8 round) external override {
     _claim(msg.sender, round);
   }
 
+  /// @notice Migrate the amount of principal to the current round and transfer the rest principal to the caller
+  /// @param amount Amount to migrate.
+  /// @param round The closed round to migrate
   function migrate(uint256 amount, uint8 round) external override {
     if (round >= currentRound) revert NotInitiatedRound(round, currentRound);
     PoolData storage poolData = _rounds[round];
@@ -228,6 +238,12 @@ contract StakingPool is IStakingPool {
 
   /***************** Admin Functions ******************/
 
+  /// @notice Init the new round. After the round closed, staking is not allowed.
+  /// @param rewardPerSecond The total accrued reward per second in new round
+  /// @param year The round start year
+  /// @param month The round start month
+  /// @param day The round start day
+  /// @param duration The duration of the initiated round
   function initNewRound(
     uint256 rewardPerSecond,
     uint16 year,

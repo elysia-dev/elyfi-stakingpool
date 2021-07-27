@@ -37,12 +37,14 @@ describe('StakingPool.migrate', () => {
   const firstRoundStartTimestamp = toTimestamp(
     firstRoundInit.year,
     firstRoundInit.month,
-    firstRoundInit.day
+    firstRoundInit.day,
+    BigNumber.from(10)
   );
   const secondRoundStartTimestamp = toTimestamp(
     secondRoundInit.year,
     secondRoundInit.month,
-    secondRoundInit.day
+    secondRoundInit.day,
+    BigNumber.from(10)
   ).add(10);
 
   const amount = ethers.utils.parseEther('1');
@@ -230,9 +232,5 @@ describe('StakingPool.migrate', () => {
       expect(toPoolDataAfter).to.be.equalPoolData(expectedToPoolData);
       expect(toUserDataAfter).to.be.equalUserData(expectedToUserData);
     });
-  });
-
-  context('claim scenario', async () => {
-    it('success', async () => {});
   });
 });

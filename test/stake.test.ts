@@ -22,7 +22,7 @@ describe('StakingPool.stake', () => {
   const day = BigNumber.from(7);
   const duration = BigNumber.from(30);
 
-  const startTimestamp = toTimestamp(year, month, day);
+  const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
 
   beforeEach('deploy staking pool', async () => {
     testEnv = await setTestEnv();

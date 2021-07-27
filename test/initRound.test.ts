@@ -1,7 +1,7 @@
 import { BigNumber, ContractTransaction, utils } from 'ethers';
 import { waffle } from 'hardhat';
 import TestEnv from './types/TestEnv';
-import { SECONDSPERDAY } from './utils/constants';
+import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { expect } from 'chai';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
@@ -19,7 +19,7 @@ describe('StakingPool.initRound', () => {
   const day = BigNumber.from(7);
   const duration = BigNumber.from(30);
 
-  const startTimestamp = toTimestamp(year, month, day);
+  const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
   const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
 
   beforeEach(async () => {
@@ -49,7 +49,7 @@ describe('StakingPool.initRound', () => {
       const poolData = await testEnv.stakingPool.getPoolData(1);
 
       expect(poolData.rewardPerSecond).to.be.equal(rewardPersecond);
-      expect(poolData.rewardIndex).to.be.equal(0);
+      expect(poolData.rewardIndex).to.be.equal(WAD);
       expect(poolData.startTimestamp).to.be.equal(startTimestamp);
       expect(poolData.endTimestamp).to.be.equal(endTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
@@ -71,7 +71,7 @@ describe('StakingPool.initRound', () => {
   context('when the current round is over', async () => {
     let initTx: ContractTransaction;
     const nextYear = year.add(1);
-    const nextStartTimestamp = toTimestamp(nextYear, month, day);
+    const nextStartTimestamp = toTimestamp(nextYear, month, day, BigNumber.from(10));
     const nextEndTimestamp = nextStartTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
 
     beforeEach('init the first round and time passes', async () => {
@@ -89,7 +89,7 @@ describe('StakingPool.initRound', () => {
       const poolData = await testEnv.stakingPool.getPoolData(2);
 
       expect(poolData.rewardPerSecond).to.be.equal(rewardPersecond);
-      expect(poolData.rewardIndex).to.be.equal(0);
+      expect(poolData.rewardIndex).to.be.equal(WAD);
       expect(poolData.startTimestamp).to.be.equal(nextStartTimestamp);
       expect(poolData.endTimestamp).to.be.equal(nextEndTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);

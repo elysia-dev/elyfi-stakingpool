@@ -24,7 +24,12 @@ describe('StakingPool.withdraw', () => {
     duration: BigNumber.from(30),
   };
 
-  const startTimestamp = toTimestamp(firstRound.year, firstRound.month, firstRound.day);
+  const startTimestamp = toTimestamp(
+    firstRound.year,
+    firstRound.month,
+    firstRound.day,
+    BigNumber.from(10)
+  );
   const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(firstRound.duration));
 
   const amount = ethers.utils.parseEther('1');
@@ -189,7 +194,8 @@ describe('StakingPool.withdraw', () => {
     const secondRoundStartTimestamp = toTimestamp(
       secondRound.year,
       secondRound.month,
-      secondRound.day
+      secondRound.day,
+      BigNumber.from(10)
     );
     let first: number;
     let second: number;

@@ -64,13 +64,13 @@ You can interact and test elyfi stakingpool by running tasks. Below is implement
 
 ```
 # Init New Round
-yarn hardhat --network networkname testnet:initNewRound --round {first|second|third...}
+yarn task --network networkname testnet:initNewRound --round {first|second|third...}
 
 # Stake
-yarn hardhat --network networkname testnet:stake --amount amountToStake
+yarn task --network networkname testnet:stake --amount amountToStake
 
 # Withdraw
-yarn hardhat --network networkname testnet:withdraw --amount amountToStake --round {1 |2|3| ...}
+yarn task --network networkname testnet:withdraw --amount amountToStake --round {1 |2|3| ...}
 
 ```
 

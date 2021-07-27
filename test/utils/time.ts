@@ -1,8 +1,15 @@
 import { BigNumber } from 'ethers';
 import { waffle } from 'hardhat';
 
-export function toTimestamp(year: BigNumber, month: BigNumber, day: BigNumber) {
-  return BigNumber.from(Date.UTC(year.toNumber(), month.sub(1).toNumber(), day.toNumber()) / 1000);
+export function toTimestamp(year: BigNumber, month: BigNumber, day: BigNumber, hour?: BigNumber) {
+  if (hour == undefined) {
+    return BigNumber.from(
+      Date.UTC(year.toNumber(), month.sub(1).toNumber(), day.toNumber()) / 1000
+    );
+  }
+  return BigNumber.from(
+    Date.UTC(year.toNumber(), month.sub(1).toNumber(), day.toNumber(), hour.toNumber()) / 1000
+  );
 }
 
 export async function advanceBlock() {
