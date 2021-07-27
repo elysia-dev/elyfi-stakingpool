@@ -80,9 +80,9 @@ In the production, admin can initiate round by executing tasks.
 
 ```
 # Init New Round in ElPool
-yarn hardhat --network networkname mainnet:initNewRound:elPool --round {first|second|third...}
+yarn task --network networkname mainnet:initNewRound:elPool --round {first|second|third...}
 
 # Init New Round in ElfiPool
-yarn hardhat --network networkname mainnet:initNewRound:elyfiPool --round {first|second|third...}
+yarn task --network networkname mainnet:initNewRound:elyfiPool --round {first|second|third...}
 
 ```
