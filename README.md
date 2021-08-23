@@ -86,3 +86,11 @@ yarn task --network networkname mainnet:initNewRound:elPool --round {first|secon
 yarn task --network networkname mainnet:initNewRound:elyfiPool --round {first|second|third...}
 
 ```
+
+#### Function Call Gas Consumption
+
+| Contract    | Method   | Min    | Max    | Avg    |
+| ----------- | -------- | ------ | ------ | ------ |
+| StakingPool | migrate  | 161524 | 201396 | 176571 |
+| StakingPool | stake    | 95090  | 153608 | 134195 |
+| StakingPool | withdraw | 43125  | 103221 | 69564  |
