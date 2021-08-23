@@ -6,6 +6,9 @@ import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake, expectDataAfterWithdraw } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
+
+const { loadFixture } = waffle;
+
 require('./utils/matchers.ts');
 
 import { expect } from 'chai';
@@ -33,6 +36,19 @@ describe('StakingPool.withdraw', () => {
   const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(firstRound.duration));
 
   const amount = ethers.utils.parseEther('1');
+
+  async function fixture() {
+    return await setTestEnv();
+  }
+
+  after(async () => {
+    await loadFixture(fixture);
+  });
+
+  beforeEach('deploy staking pool', async () => {
+    testEnv = await loadFixture(fixture);
+    await testEnv.stakingAsset.connect(alice).faucet();
+  });
 
   beforeEach('deploy staking pool and init first round', async () => {
     testEnv = await setTestEnv();

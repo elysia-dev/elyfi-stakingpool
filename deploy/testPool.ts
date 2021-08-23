@@ -13,7 +13,7 @@ const testPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment)
 
   const rewardAsset = await getRewardAsset(hre);
 
-  const stakingPool = await deploy('StakingPool', {
+  const stakingPool = await deploy('StakingPoolTest', {
     from: deployer,
     args: [stakingAsset.address, rewardAsset.address],
     log: true,

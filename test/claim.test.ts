@@ -6,6 +6,9 @@ import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterClaim } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
+
+const { loadFixture } = waffle;
+
 require('./utils/matchers.ts');
 
 import { expect } from 'chai';
@@ -47,8 +50,16 @@ describe('StakingPool.claim reward', () => {
 
   const amount = ethers.utils.parseEther('1');
 
+  async function fixture() {
+    return await setTestEnv();
+  }
+
+  after(async () => {
+    await loadFixture(fixture);
+  });
+
   beforeEach('deploy staking pool and init first round', async () => {
-    testEnv = await setTestEnv();
+    testEnv = await loadFixture(fixture);
     await testEnv.rewardAsset.connect(deployer).transfer(testEnv.stakingPool.address, RAY);
     await testEnv.stakingPool
       .connect(deployer)

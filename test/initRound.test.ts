@@ -5,6 +5,9 @@ import { RAY, SECONDSPERDAY, WAD } from './utils/constants';
 import { setTestEnv } from './utils/testEnv';
 import { expect } from 'chai';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
+
+const { loadFixture } = waffle;
+
 require('./utils/matchers.ts');
 
 describe('StakingPool.initRound', () => {
@@ -22,8 +25,16 @@ describe('StakingPool.initRound', () => {
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
   const endTimestamp = startTimestamp.add(BigNumber.from(SECONDSPERDAY).mul(duration));
 
+  async function fixture() {
+    return await setTestEnv();
+  }
+
+  after(async () => {
+    await loadFixture(fixture);
+  });
+
   beforeEach(async () => {
-    testEnv = await setTestEnv();
+    testEnv = await loadFixture(fixture);
     await testEnv.stakingAsset.connect(depositor).faucet();
   });
 
@@ -53,7 +64,7 @@ describe('StakingPool.initRound', () => {
       expect(poolData.startTimestamp).to.be.equal(startTimestamp);
       expect(poolData.endTimestamp).to.be.equal(endTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
-      expect(poolData.lastUpdateTimestamp).to.be.equal(await getTimestamp(initTx));
+      expect(poolData.lastUpdateTimestamp).to.be.equal(startTimestamp);
       expect(await testEnv.stakingPool.currentRound()).to.be.equal(1);
     });
     it('reverts if the next round initiated before the current round is over', async () => {
@@ -93,7 +104,7 @@ describe('StakingPool.initRound', () => {
       expect(poolData.startTimestamp).to.be.equal(nextStartTimestamp);
       expect(poolData.endTimestamp).to.be.equal(nextEndTimestamp);
       expect(poolData.totalPrincipal).to.be.equal(0);
-      expect(poolData.lastUpdateTimestamp).to.be.equal(await getTimestamp(secondInitTx));
+      expect(poolData.lastUpdateTimestamp).to.be.equal(nextStartTimestamp);
       expect(await testEnv.stakingPool.currentRound()).to.be.equal(2);
     });
 

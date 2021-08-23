@@ -52,10 +52,10 @@ yarn hardhat deploy --network networkname --tags testPool
 
 #### Testing
 
-To run the tests run:
+To run the tests, run:
 
 ```
-yarn test test/*.test.ts
+yarn test
 ```
 
 #### Tasks for test

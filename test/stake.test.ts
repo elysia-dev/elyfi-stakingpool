@@ -6,6 +6,9 @@ import { setTestEnv } from './utils/testEnv';
 import { advanceTimeTo, getTimestamp, toTimestamp } from './utils/time';
 import { expectDataAfterStake } from './utils/expect';
 import { getPoolData, getUserData } from './utils/helpers';
+
+const { loadFixture } = waffle;
+
 require('./utils/matchers.ts');
 
 import { expect } from 'chai';
@@ -24,8 +27,16 @@ describe('StakingPool.stake', () => {
 
   const startTimestamp = toTimestamp(year, month, day, BigNumber.from(10));
 
+  async function fixture() {
+    return await setTestEnv();
+  }
+
+  after(async () => {
+    await loadFixture(fixture);
+  });
+
   beforeEach('deploy staking pool', async () => {
-    testEnv = await setTestEnv();
+    testEnv = await loadFixture(fixture);
     await testEnv.stakingAsset.connect(alice).faucet();
   });
 
