@@ -46,11 +46,16 @@ contract StakingPool is IStakingPool {
 
   /***************** View functions ******************/
 
+  /// @notice Returns reward index of the round
+  /// @param round The round of the pool
   function getRewardIndex(uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
     return poolData.getRewardIndex();
   }
 
+  /// @notice Returns user accrued reward index of the round
+  /// @param user The user address
+  /// @param round The round of the pool
   function getUserReward(address user, uint8 round) external view override returns (uint256) {
     PoolData storage poolData = _rounds[round];
     return poolData.getUserReward(user);
@@ -293,7 +298,7 @@ contract StakingPool is IStakingPool {
 
   /***************** Modifier ******************/
 
-  modifier onlyAdmin {
+  modifier onlyAdmin() {
     if (msg.sender != _admin) revert OnlyAdmin();
     _;
   }
