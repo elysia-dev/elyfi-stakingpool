@@ -1,6 +1,10 @@
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { DeployFunction } from 'hardhat-deploy/types';
-import { getStakingAsset, getRewardAsset } from '../utils/getDeployedContracts';
+import {
+  deployOrGetStakingAsset,
+  deployOrGetRewardAsset,
+  getStakingAsset,
+} from '../utils/getDeployedContracts';
 const testPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name == 'mainnet') {
     throw new Error('Testpool should not be deployed on the test network');
@@ -11,7 +15,7 @@ const testPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment)
 
   const stakingAsset = await getStakingAsset(hre);
 
-  const rewardAsset = await getRewardAsset(hre);
+  const rewardAsset = await getStakingAsset(hre);
 
   const stakingPool = await deploy('StakingPoolTest', {
     from: deployer,

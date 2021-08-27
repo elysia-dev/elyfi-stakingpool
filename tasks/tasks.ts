@@ -2,7 +2,11 @@ import { task } from 'hardhat/config';
 import { HardhatRuntimeEnvironment } from 'hardhat/types';
 import { StakingAsset, StakingPool } from '../typechain';
 import * as rounds from '../data/rounds';
-import { getRewardAsset, getStakingAsset, getStakingPool } from '../utils/getDeployedContracts';
+import {
+  deployOrGetRewardAsset,
+  deployOrGetStakingAsset,
+  getStakingPool,
+} from '../utils/getDeployedContracts';
 import { ethers, utils } from 'ethers';
 
 interface Args {
@@ -17,7 +21,7 @@ task('testnet:initNewRound', 'Initiate staking round')
     const [deployer] = await hre.ethers.getSigners();
 
     stakingPool = await getStakingPool(hre);
-    const rewardAsset = await getStakingAsset(hre);
+    const rewardAsset = await deployOrGetStakingAsset(hre);
 
     const roundData: rounds.InitRoundData = rounds[args.round];
 
@@ -49,7 +53,7 @@ task('testnet:stake', 'Stake asset')
 
     stakingPool = await getStakingPool(hre);
 
-    const stakingAsset = (await getStakingAsset(hre)) as StakingAsset;
+    const stakingAsset = (await deployOrGetStakingAsset(hre)) as StakingAsset;
 
     if ((await stakingAsset.balanceOf(deployer.address)).lt(amount)) {
       const faucetTx = await stakingAsset.connect(deployer).faucet();
@@ -78,7 +82,7 @@ task('testnet:withdraw', 'Unstake asset')
 
     stakingPool = await getStakingPool(hre);
 
-    const rewardAsset = await getRewardAsset(hre);
+    const rewardAsset = await deployOrGetRewardAsset(hre);
 
     await rewardAsset.connect(deployer).transfer(stakingPool.address, utils.parseEther('10000000'));
 

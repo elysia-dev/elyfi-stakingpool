@@ -12,8 +12,8 @@ export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<St
   } catch (e) {
     const { deployer } = await hre.getNamedAccounts();
     const { deploy } = hre.deployments;
-    const stakingAsset = await getStakingAsset(hre);
-    const rewardAsset = await getRewardAsset(hre);
+    const stakingAsset = await deployOrGetStakingAsset(hre);
+    const rewardAsset = await deployOrGetRewardAsset(hre);
     const StakingPoolLocalDeploy = await deploy('StakingPool', {
       from: deployer,
       log: true,
@@ -28,7 +28,9 @@ export const getStakingPool = async (hre: HardhatRuntimeEnvironment): Promise<St
   return (await hre.ethers.getContractAt(file.abi, file.address)) as StakingPool;
 };
 
-export const getStakingAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
+export const deployOrGetStakingAsset = async (
+  hre: HardhatRuntimeEnvironment
+): Promise<Contract> => {
   let file: DeployedContract;
 
   try {
@@ -49,7 +51,7 @@ export const getStakingAsset = async (hre: HardhatRuntimeEnvironment): Promise<C
   return await hre.ethers.getContractAt(file.abi, file.address);
 };
 
-export const getRewardAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
+export const deployOrGetRewardAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
   let file: DeployedContract;
 
   try {
@@ -67,6 +69,18 @@ export const getRewardAsset = async (hre: HardhatRuntimeEnvironment): Promise<Co
       RewardAssetLocalDeploy.address
     );
   }
+  return await hre.ethers.getContractAt(file.abi, file.address);
+};
+
+export const getStakingAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
+  let file: DeployedContract;
+  file = require(getDeploymentPath(hre.network.name, stakingPool.StakingAsset));
+  return await hre.ethers.getContractAt(file.abi, file.address);
+};
+
+export const getRewardAsset = async (hre: HardhatRuntimeEnvironment): Promise<Contract> => {
+  let file: DeployedContract;
+  file = require(getDeploymentPath(hre.network.name, stakingPool.RewardAsset));
   return await hre.ethers.getContractAt(file.abi, file.address);
 };
 
