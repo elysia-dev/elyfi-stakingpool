@@ -26,7 +26,7 @@ const testPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment)
     log: true,
   });
 
-  await stakingAsset.connect(deployer).transfer(stakingPool.address, '1' + '0'.repeat(26));
+  await rewardAsset.connect(deployer).transfer(stakingPool.address, '1' + '0'.repeat(26));
 
   await hre.run('etherscan-verify', {
     network: hre.network.name,
