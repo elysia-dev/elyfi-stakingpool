@@ -34,8 +34,8 @@ Set up `.env` file in the project directory and add the following environment va
 
 ```
 ADMIN= {admin private key for production}
-TEST_MNEMONIC= {mnemonic phrase for testnet}
 ETHERSCAN_API_KEY= {etherscan api key for verifying}
+INFURA_API_KEY={infura api key for executing tasks}
 ```
 
 #### Deployments
@@ -53,6 +53,8 @@ yarn hardhat deploy --network networkname --tags testPool
 yarn hardhat deploy --network networkname --tags testPool
 {networkname: kovan | ropsten | ...}
 ```
+
+If necessary, you can add `--reset` tag to reset deployed contracts in the deployment scripts
 
 #### Testing
 

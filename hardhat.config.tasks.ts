@@ -7,8 +7,6 @@ import 'hardhat-deploy';
 import { HardhatUserConfig } from 'hardhat/types';
 import './tasks/tasks';
 
-const testMnemonic = 'suggest mirror pulp horn goat wagon body long fortune dirt glass awesome';
-
 const config: HardhatUserConfig = {
   solidity: {
     version: '0.8.4',
@@ -37,31 +35,12 @@ const config: HardhatUserConfig = {
     },
     ropsten: {
       url: `https://ropsten.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: {
-        mnemonic: process.env.TEST_MNEMONIC || testMnemonic,
-      },
-      chainId: 3,
+      accounts: [process.env.ADMIN || ''],
     },
     kovan: {
       url: `https://kovan.infura.io/v3/${process.env.INFURA_API_KEY}`,
-      accounts: {
-        mnemonic: process.env.TEST_MNEMONIC || testMnemonic,
-      },
-      chainId: 42,
-    },
-    binanceTestnet: {
-      url: 'https://data-seed-prebsc-1-s1.binance.org:8545',
-      chainId: 97,
-      gasPrice: 20000000000,
-      accounts: {
-        mnemonic: process.env.TEST_MNEMONIC || testMnemonic,
-      },
-    },
-    binanceMainnet: {
-      url: 'https://bsc-dataseed.binance.org/',
-      chainId: 56,
-      gasPrice: 20000000000,
       accounts: [process.env.ADMIN || ''],
+      chainId: 42,
     },
     ganache: {
       url: 'http://0.0.0.0:8545',
