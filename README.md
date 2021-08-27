@@ -48,6 +48,10 @@ yarn hardhat deploy --network networkname --tags {elPool | elyfiPool}
 #Deploy on local network
 yarn hardhat deploy --network networkname --tags testPool
 (networkname : hardhat | ganache)
+
+#Deploy the testpool on test network
+yarn hardhat deploy --network networkname --tags testPool
+{networkname: kovan | ropsten | ...}
 ```
 
 #### Testing

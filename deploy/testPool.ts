@@ -3,10 +3,10 @@ import { DeployFunction } from 'hardhat-deploy/types';
 import { getStakingAsset, getRewardAsset } from '../utils/getDeployedContracts';
 const testPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment) {
   if (hre.network.name == 'mainnet') {
-    throw new Error('Testpool should be on the local network');
+    throw new Error('Testpool should not be deployed on the test network');
   }
   const { deployer } = await hre.getNamedAccounts();
-  hre.deployments;
+
   const { deploy } = hre.deployments;
 
   const stakingAsset = await getStakingAsset(hre);
@@ -18,6 +18,8 @@ const testPool: DeployFunction = async function (hre: HardhatRuntimeEnvironment)
     args: [stakingAsset.address, rewardAsset.address],
     log: true,
   });
+
+  await stakingAsset.connect(deployer).transfer(stakingPool.address, '1' + '0'.repeat(27));
 
   await hre.run('etherscan-verify', {
     network: hre.network.name,
